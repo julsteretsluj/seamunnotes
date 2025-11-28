@@ -55,7 +55,6 @@ function createTables() {
       )`
     ];
 
-#if
     let remaining = statements.length;
     db.serialize(() => {
       statements.forEach((sql) => {
