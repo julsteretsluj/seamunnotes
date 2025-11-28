@@ -7,20 +7,24 @@ const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, 'database.sqli
 let db;
 
 function initDatabase() {
-  db = new sqlite3.Database(DB_PATH, (err) => {
-    if (err) {
-      console.error('Failed to open SQLite database', err);
-      process.exit(1);
-    }
-    console.log('SQLite ready:', DB_PATH);
-    createTables();
+  return new Promise((resolve, reject) => {
+    db = new sqlite3.Database(DB_PATH, (err) => {
+      if (err) {
+        console.error('Failed to open SQLite database', err);
+        return reject(err);
+      }
+      console.log('SQLite ready:', DB_PATH);
+      createTables()
+        .then(resolve)
+        .catch(reject);
+    });
   });
 }
 
 function createTables() {
-  db.serialize(() => {
-    db.run(`
-      CREATE TABLE IF NOT EXISTS users (
+  return new Promise((resolve, reject) => {
+    const statements = [
+      `CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
@@ -30,11 +34,8 @@ function createTables() {
         flag TEXT,
         credentials_day INTEGER DEFAULT 1,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    db.run(`
-      CREATE TABLE IF NOT EXISTS notes (
+      )`,
+      `CREATE TABLE IF NOT EXISTS notes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         from_user_id INTEGER NOT NULL,
         committee_code TEXT NOT NULL,
@@ -42,11 +43,8 @@ function createTables() {
         content TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE CASCADE
-      )
-    `);
-
-    db.run(`
-      CREATE TABLE IF NOT EXISTS note_recipients (
+      )`,
+      `CREATE TABLE IF NOT EXISTS note_recipients (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         note_id INTEGER NOT NULL,
         recipient_type TEXT NOT NULL,
@@ -54,8 +52,25 @@ function createTables() {
         is_read INTEGER DEFAULT 0,
         is_starred INTEGER DEFAULT 0,
         FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE
-      )
-    `);
+      )`
+    ];
+
+#if
+    let remaining = statements.length;
+    db.serialize(() => {
+      statements.forEach((sql) => {
+        db.run(sql, (err) => {
+          if (err) {
+            console.error('Failed to run migration', err);
+            return reject(err);
+          }
+          remaining -= 1;
+          if (remaining === 0) {
+            resolve();
+          }
+        });
+      });
+    });
   });
 }
 
