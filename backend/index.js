@@ -21,7 +21,7 @@ async function start() {
     app.use(cors({ origin: process.env.ALLOWED_ORIGINS?.split(',') || '*', credentials: true }));
     app.use(bodyParser.json());
 
-    registerWebsocket(app, authRoutes.authMiddleware);
+    registerWebsocket(app);
 
     app.use('/api/auth', authRoutes);
     app.use('/api/notes', noteRoutes);

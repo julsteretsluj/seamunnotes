@@ -1,21 +1,53 @@
 const express = require('express');
 const { authMiddleware } = require('./auth');
 const { query, run } = require('../database');
+const { broadcastNote } = require('../websocket');
 
 const router = express.Router();
 
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const committee = req.user.committee;
+    const userId = req.user.id;
     const rows = await query(
-      `SELECT n.*, u.username as from_username, u.flag as from_flag
+      `SELECT n.*, u.username as from_username, u.flag as from_flag, u.delegation as from_delegation
        FROM notes n
        JOIN users u ON n.from_user_id = u.id
        WHERE n.committee_code = ?
        ORDER BY n.created_at DESC`,
       [committee]
     );
-    res.json(rows);
+    const notesWithRecipients = await Promise.all(
+      rows.map(async (note) => {
+        const recipients = await query(
+          `SELECT recipient_type, recipient_ref FROM note_recipients WHERE note_id = ?`,
+          [note.id]
+        );
+        const isRead = await query(
+          `SELECT is_read FROM note_recipients WHERE note_id = ? AND recipient_type = 'user' AND recipient_ref = ?`,
+          [note.id, String(userId)]
+        );
+        const isStarred = await query(
+          `SELECT is_starred FROM note_recipients WHERE note_id = ? AND recipient_type = 'user' AND recipient_ref = ?`,
+          [note.id, String(userId)]
+        );
+        return {
+          id: note.id,
+          fromId: note.from_user_id,
+          fromUsername: note.from_username,
+          fromFlag: note.from_flag,
+          fromDelegation: note.from_delegation,
+          fromCommittee: note.committee_code,
+          topic: note.topic,
+          content: note.content,
+          timestamp: note.created_at,
+          recipients: recipients.map(r => ({ type: r.recipient_type, id: r.recipient_ref })),
+          isRead: isRead.length > 0 ? Boolean(isRead[0].is_read) : false,
+          isStarred: isStarred.length > 0 ? Boolean(isStarred[0].is_starred) : false
+        };
+      })
+    );
+    res.json(notesWithRecipients);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -40,7 +72,70 @@ router.post('/', authMiddleware, async (req, res) => {
         [noteId, recipient.type, recipient.id]
       );
     }
+    broadcastNote(req.user.committee, noteId);
     res.json({ id: noteId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.patch('/:id/read', authMiddleware, async (req, res) => {
+  try {
+    const noteId = req.params.id;
+    const userId = String(req.user.id);
+    const existing = await query(
+      `SELECT id FROM note_recipients 
+       WHERE note_id = ? AND recipient_type = 'user' AND recipient_ref = ?`,
+      [noteId, userId]
+    );
+    if (existing.length > 0) {
+      await run(
+        `UPDATE note_recipients 
+         SET is_read = 1 
+         WHERE note_id = ? AND recipient_type = 'user' AND recipient_ref = ?`,
+        [noteId, userId]
+      );
+    } else {
+      await run(
+        `INSERT INTO note_recipients (note_id, recipient_type, recipient_ref, is_read)
+         VALUES (?, 'user', ?, 1)`,
+        [noteId, userId]
+      );
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.patch('/:id/star', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'chair') {
+      return res.status(403).json({ error: 'Only chairs can star notes' });
+    }
+    const noteId = req.params.id;
+    const userId = String(req.user.id);
+    const { starred } = req.body;
+    const existing = await query(
+      `SELECT id FROM note_recipients 
+       WHERE note_id = ? AND recipient_type = 'user' AND recipient_ref = ?`,
+      [noteId, userId]
+    );
+    if (existing.length > 0) {
+      await run(
+        `UPDATE note_recipients 
+         SET is_starred = ? 
+         WHERE note_id = ? AND recipient_type = 'user' AND recipient_ref = ?`,
+        [starred ? 1 : 0, noteId, userId]
+      );
+    } else {
+      await run(
+        `INSERT INTO note_recipients (note_id, recipient_type, recipient_ref, is_starred)
+         VALUES (?, 'user', ?, ?)`,
+        [noteId, userId, starred ? 1 : 0]
+      );
+    }
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
