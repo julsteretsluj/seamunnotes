@@ -100,9 +100,18 @@ function run(sql, params = []) {
   });
 }
 
-async function seedUsers(defaultUsers = []) {
+async function seedUsers(defaultUsers = [], forceReseed = false) {
   const count = await get('SELECT COUNT(*) as count FROM users');
-  if (count && count.count > 0) return;
+  if (count && count.count > 0 && !forceReseed) {
+    console.log('Users already exist, skipping seed. Set FORCE_RESEED=true to reseed.');
+    return;
+  }
+  
+  if (forceReseed) {
+    console.log('Force reseeding: clearing existing users...');
+    await run('DELETE FROM users');
+  }
+  
   const insertSql = `
     INSERT INTO users (username, password, role, committee_code, delegation, flag, credentials_day)
     VALUES (?, ?, ?, ?, ?, ?, ?)

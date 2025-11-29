@@ -15,7 +15,8 @@ const PORT = process.env.PORT || 5000;
 async function start() {
   try {
     await initDatabase();
-    await seedUsers(seedData);
+    const forceReseed = process.env.FORCE_RESEED === 'true';
+    await seedUsers(seedData, forceReseed);
 
     const app = express();
     app.use(cors({ origin: process.env.ALLOWED_ORIGINS?.split(',') || '*', credentials: true }));
