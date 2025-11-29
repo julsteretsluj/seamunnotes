@@ -116,6 +116,10 @@ async function seedUsers(defaultUsers = [], forceReseed = false) {
     INSERT INTO users (username, password, role, committee_code, delegation, flag, credentials_day)
     VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
+  
+  console.log(`Seeding ${defaultUsers.length} users...`);
+  let seeded = 0;
+  
   for (const user of defaultUsers) {
     const hashed = await bcrypt.hash(user.password, 10);
     await run(insertSql, [
@@ -127,8 +131,12 @@ async function seedUsers(defaultUsers = [], forceReseed = false) {
       user.flag,
       user.credentials_day || 1
     ]);
+    seeded++;
+    if (seeded % 100 === 0) {
+      console.log(`Seeded ${seeded}/${defaultUsers.length} users...`);
+    }
   }
-  console.log('Seeded users:', defaultUsers.length);
+  console.log('Seeding complete:', defaultUsers.length, 'users');
 }
 
 module.exports = {
