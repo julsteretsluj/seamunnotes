@@ -471,7 +471,22 @@ async function handleLogin(event) {
 
     els.loginView.classList.add('hidden');
     els.dashboardView.classList.remove('hidden');
-    els.userChip.textContent = `${state.currentUser.flag} ${state.currentUser.name} (${state.currentUser.role === 'chair' ? 'Chair' : state.currentUser.delegation})`;
+    
+    // Format display name
+    let displayName = state.currentUser.name;
+    if (state.currentUser.role === 'chair') {
+      // Parse username like "ep-chair01-day1" to get "Chair of EP (1)"
+      const match = state.currentUser.name.match(/chair(\d+)/i);
+      if (match && state.currentUser.committeeCode) {
+        const chairNum = parseInt(match[1], 10);
+        displayName = `Chair of ${state.currentUser.committeeCode} (${chairNum})`;
+      }
+    } else {
+      // For delegates, use the delegation name
+      displayName = state.currentUser.delegation;
+    }
+    
+    els.userChip.textContent = `${state.currentUser.flag} ${displayName}`;
     els.dayChip.textContent = `Session Day ${day}`;
     document.querySelectorAll('.chair-only').forEach((el) => {
       el.classList[state.currentUser.role === 'chair' ? 'remove' : 'add']('hidden');
@@ -730,7 +745,21 @@ async function checkExistingSession() {
       connectWebSocket();
       els.loginView.classList.add('hidden');
       els.dashboardView.classList.remove('hidden');
-      els.userChip.textContent = `${state.currentUser.flag} ${state.currentUser.name} (${state.currentUser.role === 'chair' ? 'Chair' : state.currentUser.delegation})`;
+      // Format display name
+      let displayName = state.currentUser.name;
+      if (state.currentUser.role === 'chair') {
+        // Parse username like "ep-chair01-day1" to get "Chair of EP (1)"
+        const match = state.currentUser.name.match(/chair(\d+)/i);
+        if (match && state.currentUser.committeeCode) {
+          const chairNum = parseInt(match[1], 10);
+          displayName = `Chair of ${state.currentUser.committeeCode} (${chairNum})`;
+        }
+      } else {
+        // For delegates, use the delegation name
+        displayName = state.currentUser.delegation;
+      }
+      
+      els.userChip.textContent = `${state.currentUser.flag} ${displayName}`;
       els.dayChip.textContent = `Session Day ${state.currentDay}`;
       document.querySelectorAll('.chair-only').forEach((el) => {
         el.classList[state.currentUser.role === 'chair' ? 'remove' : 'add']('hidden');
