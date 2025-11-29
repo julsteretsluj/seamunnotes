@@ -202,14 +202,30 @@ async function fetchNotes() {
 async function fetchUsers() {
   try {
     const users = await apiCall('/users');
-    state.users = users.map(u => ({
-      id: u.id,
-      name: u.username,
-      role: u.role,
-      delegation: u.delegation,
-      flag: u.flag,
-      committeeCode: u.committee_code
-    }));
+    state.users = users.map((u) => {
+      let displayName = u.username;
+      if (u.role === 'chair') {
+        // Username like "ep-chair01-day1" → "Chair of EP (1)"
+        const match = u.username.match(/chair(\d+)/i);
+        if (match && u.committee_code) {
+          const chairNum = parseInt(match[1], 10);
+          displayName = `Chair of ${u.committee_code} (${chairNum})`;
+        }
+      } else if (u.delegation) {
+        // Delegates: use "Committee Name Seat XX"
+        displayName = u.delegation;
+      }
+      return {
+        id: u.id,
+        username: u.username,
+        displayName,
+        role: u.role,
+        delegation: u.delegation,
+        flag: u.flag,
+        committeeCode: u.committee_code,
+        credentialsDay: u.credentials_day
+      };
+    });
     return state.users;
   } catch (err) {
     console.error('Failed to fetch users:', err);
@@ -261,12 +277,17 @@ async function renderRecipients(committeeCode) {
   }
   await fetchUsers();
   const list = state.users
-    .filter((user) => user.committeeCode === committeeCode && user.id !== state.currentUser?.id)
+    .filter(
+      (user) =>
+        user.committeeCode === committeeCode &&
+        user.id !== state.currentUser?.id &&
+        (!user.credentialsDay || user.credentialsDay === state.currentDay)
+    )
     .map(
       (user) => `
         <label class="checkbox">
           <input type="checkbox" name="userRecipient" value="${user.id}" />
-          <span>${user.flag} ${user.name} (${user.role === 'chair' ? 'Chair' : user.delegation})</span>
+          <span>${user.flag} ${user.displayName}</span>
         </label>
       `
     )
@@ -328,7 +349,7 @@ function formatRecipients(note) {
   const labels = note.recipients.map((recipient) => {
     if (recipient.type === 'user') {
       const user = state.users.find((u) => String(u.id) === String(recipient.id));
-      return user ? `${user.flag} ${user.name}` : 'Unknown delegate';
+      return user ? `${user.flag} ${user.displayName || user.delegation || user.username}` : 'Unknown delegate';
     }
     if (recipient.type === 'delegation') {
       const user = state.users.find(
