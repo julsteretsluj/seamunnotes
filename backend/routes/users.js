@@ -8,7 +8,7 @@ router.get('/', authMiddleware, async (req, res) => {
   try {
     const committee = req.user.committee;
     const users = await query(
-      `SELECT id, username, role, committee_code, delegation, flag
+      `SELECT id, username, role, committee_code, delegation, flag, credentials_day
        FROM users
        WHERE committee_code = ? AND id != ?
        ORDER BY role DESC, delegation`,
@@ -38,7 +38,7 @@ router.get('/delegations', authMiddleware, async (req, res) => {
 router.get('/me', authMiddleware, async (req, res) => {
   try {
     const rows = await query(
-      `SELECT id, username, role, committee_code, delegation, flag
+      `SELECT id, username, role, committee_code, delegation, flag, credentials_day
        FROM users WHERE id = ?`,
       [req.user.id]
     );
