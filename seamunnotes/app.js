@@ -155,10 +155,22 @@ async function apiCall(endpoint, options = {}) {
     }
     
     if (!res.ok) {
+      // Check for invalid token error specifically
+      if (res.status === 401) {
+        const errorMsg = data.error || '';
+        if (errorMsg === 'Invalid token' || errorMsg.includes('token') || errorMsg.includes('authorization')) {
+          // Mark token as invalid - will be handled by caller
+          throw new Error('Invalid token');
+        }
+      }
       throw new Error(data.error || `HTTP ${res.status}: ${res.statusText}`);
     }
     return data;
   } catch (err) {
+    // Don't log or re-throw if we already handled logout
+    if (err.message === 'Invalid token' && !state.token) {
+      return; // Already logged out, just return
+    }
     console.error('API call failed:', {
       endpoint,
       url,
@@ -223,9 +235,11 @@ async function fetchNotes() {
     console.error('Failed to fetch notes:', err);
     // Provide more specific error message
     const errorMsg = err.message || 'Unknown error';
-    if (errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
-      alert('Your session has expired. Please log in again.');
+    if (errorMsg.includes('401') || errorMsg.includes('Unauthorized') || errorMsg.includes('Invalid token')) {
+      // Token is invalid - clear session and redirect to login
+      console.log('Token invalid, clearing session...');
       handleLogout();
+      alert('Your session has expired. Please log in again.');
     } else if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
       alert('You do not have permission to view notes. Please contact support.');
     } else if (errorMsg.includes('Network') || errorMsg.includes('Failed to fetch')) {
@@ -376,7 +390,7 @@ async function toggleStar(noteId) {
       body: JSON.stringify({ starred: newStarred })
     });
     note.isStarred = newStarred;
-    renderNotes();
+  renderNotes();
   } catch (err) {
     console.error('Failed to toggle star:', err);
     alert('Failed to star note. Only chairs can star notes.');
@@ -387,19 +401,19 @@ function formatRecipients(note) {
   const labels = note.recipients
     .filter((recipient) => recipient.type !== 'chairs') // Hide chairs from recipient display
     .map((recipient) => {
-      if (recipient.type === 'user') {
+    if (recipient.type === 'user') {
         const user = state.users.find((u) => String(u.id) === String(recipient.id));
         return user ? `${user.flag} ${user.displayName || user.delegation || user.username}` : 'Unknown delegate';
-      }
-      if (recipient.type === 'delegation') {
-        const user = state.users.find(
+    }
+    if (recipient.type === 'delegation') {
+      const user = state.users.find(
           (u) => u.delegation === recipient.id && u.committeeCode === note.fromCommittee
-        );
-        const flag = user?.flag || '🏳️';
-        return `${flag} ${recipient.id}`;
-      }
-      return recipient.id;
-    });
+      );
+      const flag = user?.flag || '🏳️';
+      return `${flag} ${recipient.id}`;
+    }
+    return recipient.id;
+  });
   return labels.join(', ');
 }
 
@@ -481,10 +495,10 @@ function renderNotes() {
     els.inboxEmpty.classList.add('hidden');
   } else {
     // For delegates: use regular inbox
-    if (visibleNotes.length === 0) {
-      els.inboxEmpty.classList.remove('hidden');
-    } else {
-      els.inboxEmpty.classList.add('hidden');
+  if (visibleNotes.length === 0) {
+    els.inboxEmpty.classList.remove('hidden');
+  } else {
+    els.inboxEmpty.classList.add('hidden');
     }
     els.inboxList.innerHTML = visibleNotes.map(renderNoteCard).join('');
   }
@@ -525,32 +539,32 @@ function renderNotes() {
     const concernNotes = visibleNotes.filter((note) => note.isConcern);
     if (concernNotes.length === 0) {
       els.concernEmpty.classList.remove('hidden');
-    } else {
+  } else {
       els.concernEmpty.classList.add('hidden');
-    }
+  }
     els.concernList.innerHTML = concernNotes
-      .map(
-        (note) => `
+    .map(
+      (note) => `
         <article class="note-card concern-note" data-note="${note.id}">
-          <div class="note-header">
-            <div>
-              <p class="note-from">${note.fromFlag} ${note.fromDelegation}</p>
+        <div class="note-header">
+          <div>
+            <p class="note-from">${note.fromFlag} ${note.fromDelegation}</p>
               <span class="note-topic concern-badge">⚠️ ${note.topic}</span>
-            </div>
-            <button class="star-btn active" data-star="${note.id}">★</button>
           </div>
-          <div class="note-content">${note.content}</div>
-          <div class="note-meta">
-            <span>${utils.formatDate(note.timestamp)}</span>
-            <span>To: ${formatRecipients(note)}</span>
-          </div>
+          <button class="star-btn active" data-star="${note.id}">★</button>
+        </div>
+        <div class="note-content">${note.content}</div>
+        <div class="note-meta">
+          <span>${utils.formatDate(note.timestamp)}</span>
+          <span>To: ${formatRecipients(note)}</span>
+        </div>
           <div class="note-actions">
             <button class="reply-btn" data-reply="${note.id}">Reply</button>
           </div>
-        </article>
-      `
-      )
-      .join('');
+      </article>
+    `
+    )
+    .join('');
   }
 
   document.querySelectorAll('[data-note]').forEach((card) => {
@@ -606,14 +620,14 @@ async function handleLogin(event) {
       flag: data.user.flag,
       committeeCode: data.user.committee
     };
-    state.currentDay = day;
+  state.currentDay = day;
 
     localStorage.setItem('token', state.token);
     localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
     localStorage.setItem('currentDay', String(day));
 
-    els.loginView.classList.add('hidden');
-    els.dashboardView.classList.remove('hidden');
+  els.loginView.classList.add('hidden');
+  els.dashboardView.classList.remove('hidden');
     
     // Format display name
     let displayName = state.currentUser.name;
@@ -630,8 +644,8 @@ async function handleLogin(event) {
     }
     
     els.userChip.textContent = `${state.currentUser.flag} ${displayName}`;
-    els.dayChip.textContent = `Session Day ${day}`;
-    document.querySelectorAll('.chair-only').forEach((el) => {
+  els.dayChip.textContent = `Session Day ${day}`;
+  document.querySelectorAll('.chair-only').forEach((el) => {
       el.classList[state.currentUser.role === 'chair' ? 'remove' : 'add']('hidden');
     });
     
@@ -655,8 +669,8 @@ async function handleLogin(event) {
       // Switch to regular inbox tab
       switchTab('inbox');
     }
-    els.committeeSelect.disabled = true;
-    els.addDelegationBtn.disabled = false;
+  els.committeeSelect.disabled = true;
+  els.addDelegationBtn.disabled = false;
     els.committeeSelect.value = state.currentUser.committeeCode;
     await updateDelegationOptions(state.currentUser.committeeCode);
     await renderRecipients(state.currentUser.committeeCode);
@@ -773,19 +787,19 @@ async function updateDelegationOptions(code) {
     console.log('Fetched delegations:', delegations); // Debug log
     if (!delegations || delegations.length === 0) {
       els.delegationSelect.innerHTML = '<option value="">No delegations available</option>';
-      els.delegationSelect.disabled = true;
-      return;
-    }
-    els.delegationSelect.disabled = false;
-    const options =
-      '<option value="">Select delegation</option>' +
+    els.delegationSelect.disabled = true;
+    return;
+  }
+  els.delegationSelect.disabled = false;
+  const options =
+    '<option value="">Select delegation</option>' +
       delegations
         .filter((del) => del.delegation && del.delegation.trim() !== '') // Filter out empty delegations
-        .map(
+      .map(
           (del) => `<option value="${del.delegation}" data-flag="${del.flag || '🏳️'}">${del.flag || '🏳️'} ${del.delegation}</option>`
-        )
-        .join('');
-    els.delegationSelect.innerHTML = options;
+      )
+      .join('');
+  els.delegationSelect.innerHTML = options;
     if (options === '<option value="">Select delegation</option>') {
       els.delegationSelect.innerHTML = '<option value="">No delegations available</option>';
       els.delegationSelect.disabled = true;
@@ -911,10 +925,10 @@ async function handleCompose(event) {
       method: 'POST',
       body: JSON.stringify({ topic, content, recipients })
     });
-    els.composeForm.reset();
-    clearRecipientSelections();
+  els.composeForm.reset();
+  clearRecipientSelections();
     await fetchNotes();
-    alert('Note sent successfully.');
+  alert('Note sent successfully.');
   } catch (err) {
     alert('Failed to send note: ' + (err.message || 'Unknown error'));
   }
