@@ -345,6 +345,8 @@ function renderTopicOptions() {
 async function renderRecipients(committeeCode) {
   // Function kept for compatibility but no longer renders individual users
   // Recipients are now only selected via delegations
+  // This function is intentionally empty as individual user selection was removed
+  return;
 }
 
 function noteVisibleToUser(note, user) {
