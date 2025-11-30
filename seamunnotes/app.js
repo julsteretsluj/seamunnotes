@@ -143,13 +143,32 @@ async function apiCall(endpoint, options = {}) {
   const config = { ...options, headers };
   try {
     const res = await fetch(url, config);
-    const data = await res.json();
+    
+    // Handle non-JSON responses
+    let data;
+    const contentType = res.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      throw new Error(`Server returned non-JSON response: ${text.substring(0, 100)}`);
+    }
+    
     if (!res.ok) {
-      throw new Error(data.error || `HTTP ${res.status}`);
+      throw new Error(data.error || `HTTP ${res.status}: ${res.statusText}`);
     }
     return data;
   } catch (err) {
-    console.error('API call failed:', err);
+    console.error('API call failed:', {
+      endpoint,
+      url,
+      error: err.message,
+      stack: err.stack
+    });
+    // Re-throw with more context
+    if (err.name === 'TypeError' && err.message.includes('fetch')) {
+      throw new Error(`Network error: Unable to reach ${API_URL}. Please check your connection.`);
+    }
     throw err;
   }
 }
@@ -193,12 +212,27 @@ function connectWebSocket() {
 
 async function fetchNotes() {
   try {
+    if (!state.token) {
+      console.error('No authentication token available');
+      return;
+    }
     const notes = await apiCall('/notes');
     state.notes = notes;
     renderNotes();
   } catch (err) {
     console.error('Failed to fetch notes:', err);
-    alert('Failed to load notes. Please refresh the page.');
+    // Provide more specific error message
+    const errorMsg = err.message || 'Unknown error';
+    if (errorMsg.includes('401') || errorMsg.includes('Unauthorized')) {
+      alert('Your session has expired. Please log in again.');
+      handleLogout();
+    } else if (errorMsg.includes('403') || errorMsg.includes('Forbidden')) {
+      alert('You do not have permission to view notes. Please contact support.');
+    } else if (errorMsg.includes('Network') || errorMsg.includes('Failed to fetch')) {
+      alert('Unable to connect to the server. Please check your internet connection and try again.');
+    } else {
+      alert(`Failed to load notes: ${errorMsg}. Please refresh the page.`);
+    }
   }
 }
 
