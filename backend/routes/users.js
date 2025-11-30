@@ -26,7 +26,8 @@ router.get('/delegations', authMiddleware, async (req, res) => {
     const rows = await query(
       `SELECT DISTINCT delegation, flag
        FROM users
-       WHERE committee_code = ? AND delegation IS NOT NULL`,
+       WHERE committee_code = ? AND delegation IS NOT NULL AND delegation != ''
+       ORDER BY delegation`,
       [committee]
     );
     res.json(rows);

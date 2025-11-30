@@ -102,6 +102,10 @@ const els = {
   composeForm: document.getElementById('compose-form'),
   inboxList: document.getElementById('inbox-list'),
   inboxEmpty: document.getElementById('inbox-empty'),
+  toChairsList: document.getElementById('to-chairs-list'),
+  toChairsEmpty: document.getElementById('to-chairs-empty'),
+  delegateNotesList: document.getElementById('delegate-notes-list'),
+  delegateNotesEmpty: document.getElementById('delegate-notes-empty'),
   starredList: document.getElementById('starred-list'),
   starredEmpty: document.getElementById('starred-empty'),
   concernList: document.getElementById('concern-list'),
@@ -365,54 +369,92 @@ function formatRecipients(note) {
   return labels.join(', ');
 }
 
+function renderNoteCard(note) {
+  return `
+    <article class="note-card ${noteRead(note) ? '' : 'new'} ${note.isConcern ? 'concern-note' : ''}" data-note="${note.id}">
+      <div class="note-header">
+        <div>
+          <p class="note-from">${note.fromFlag} ${note.fromDelegation}</p>
+          <span class="note-topic ${note.isConcern ? 'concern-badge' : ''}">${note.isConcern ? '⚠️ ' : ''}${note.topic}</span>
+        </div>
+        ${
+          state.currentUser.role === 'chair'
+            ? `<button class="star-btn ${noteStarred(note) ? 'active' : ''}" data-star="${note.id}">
+                ${noteStarred(note) ? '★' : '☆'}
+               </button>`
+            : ''
+        }
+      </div>
+      <div class="note-content">${note.content}</div>
+      <div class="note-meta">
+        <span>${utils.formatDate(note.timestamp)}</span>
+        <span>To: ${formatRecipients(note)}</span>
+      </div>
+      <div class="note-actions">
+        <button class="reply-btn" data-reply="${note.id}">Reply</button>
+      </div>
+    </article>
+  `;
+}
+
 function renderNotes() {
   if (!state.currentUser) {
     els.inboxList.innerHTML = '';
     els.starredList.innerHTML = '';
     els.concernList.innerHTML = '';
+    if (els.toChairsList) els.toChairsList.innerHTML = '';
+    if (els.delegateNotesList) els.delegateNotesList.innerHTML = '';
     els.inboxEmpty.classList.remove('hidden');
     els.starredEmpty.classList.remove('hidden');
     els.concernEmpty.classList.remove('hidden');
+    if (els.toChairsEmpty) els.toChairsEmpty.classList.remove('hidden');
+    if (els.delegateNotesEmpty) els.delegateNotesEmpty.classList.remove('hidden');
     return;
   }
   const visibleNotes = state.notes.filter((note) => noteVisibleToUser(note, state.currentUser));
   visibleNotes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-  if (visibleNotes.length === 0) {
-    els.inboxEmpty.classList.remove('hidden');
-  } else {
+  // For chairs: separate into "To Chairs" and "Delegate Notes"
+  if (state.currentUser.role === 'chair') {
+    // Notes directed to chairs (have 'chairs' recipient)
+    const toChairsNotes = visibleNotes.filter((note) =>
+      note.recipients.some((r) => r.type === 'chairs' && r.id === state.currentUser.committeeCode)
+    );
+    
+    // Delegate-to-delegate notes (no 'chairs' recipient, but visible to chairs)
+    const delegateNotes = visibleNotes.filter((note) =>
+      !note.recipients.some((r) => r.type === 'chairs' && r.id === state.currentUser.committeeCode)
+    );
+
+    // Render "To Chairs" inbox
+    if (toChairsNotes.length === 0) {
+      els.toChairsEmpty.classList.remove('hidden');
+    } else {
+      els.toChairsEmpty.classList.add('hidden');
+    }
+    els.toChairsList.innerHTML = toChairsNotes.map(renderNoteCard).join('');
+
+    // Render "Delegate Notes" inbox
+    if (delegateNotes.length === 0) {
+      els.delegateNotesEmpty.classList.remove('hidden');
+    } else {
+      els.delegateNotesEmpty.classList.add('hidden');
+    }
+    els.delegateNotesList.innerHTML = delegateNotes.map(renderNoteCard).join('');
+
+    // Hide regular inbox for chairs
+    els.inboxList.innerHTML = '';
     els.inboxEmpty.classList.add('hidden');
+  } else {
+    // For delegates: use regular inbox
+    if (visibleNotes.length === 0) {
+      els.inboxEmpty.classList.remove('hidden');
+    } else {
+      els.inboxEmpty.classList.add('hidden');
+    }
+    els.inboxList.innerHTML = visibleNotes.map(renderNoteCard).join('');
   }
 
-  els.inboxList.innerHTML = visibleNotes
-    .map(
-      (note) => `
-      <article class="note-card ${noteRead(note) ? '' : 'new'} ${note.isConcern ? 'concern-note' : ''}" data-note="${note.id}">
-        <div class="note-header">
-          <div>
-            <p class="note-from">${note.fromFlag} ${note.fromDelegation}</p>
-            <span class="note-topic ${note.isConcern ? 'concern-badge' : ''}">${note.isConcern ? '⚠️ ' : ''}${note.topic}</span>
-          </div>
-          ${
-            state.currentUser.role === 'chair'
-              ? `<button class="star-btn ${noteStarred(note) ? 'active' : ''}" data-star="${note.id}">
-                  ${noteStarred(note) ? '★' : '☆'}
-                 </button>`
-              : ''
-          }
-        </div>
-        <div class="note-content">${note.content}</div>
-        <div class="note-meta">
-          <span>${utils.formatDate(note.timestamp)}</span>
-          <span>To: ${formatRecipients(note)}</span>
-        </div>
-        <div class="note-actions">
-          <button class="reply-btn" data-reply="${note.id}">Reply</button>
-        </div>
-      </article>
-    `
-    )
-    .join('');
 
   const starred = visibleNotes.filter((note) => noteStarred(note));
   if (starred.length === 0) {
@@ -558,6 +600,27 @@ async function handleLogin(event) {
     document.querySelectorAll('.chair-only').forEach((el) => {
       el.classList[state.currentUser.role === 'chair' ? 'remove' : 'add']('hidden');
     });
+    
+    // Show/hide appropriate inbox tabs based on role
+    const inboxTab = document.getElementById('inbox-tab');
+    const toChairsTab = document.getElementById('to-chairs-tab');
+    const delegateNotesTab = document.getElementById('delegate-notes-tab');
+    
+    if (state.currentUser.role === 'chair') {
+      // Hide regular inbox, show chair-specific inboxes
+      if (inboxTab) inboxTab.classList.add('hidden');
+      if (toChairsTab) toChairsTab.classList.remove('hidden');
+      if (delegateNotesTab) delegateNotesTab.classList.remove('hidden');
+      // Switch to "To Chairs" tab by default
+      switchTab('to-chairs');
+    } else {
+      // Show regular inbox, hide chair-specific inboxes
+      if (inboxTab) inboxTab.classList.remove('hidden');
+      if (toChairsTab) toChairsTab.classList.add('hidden');
+      if (delegateNotesTab) delegateNotesTab.classList.add('hidden');
+      // Switch to regular inbox tab
+      switchTab('inbox');
+    }
     els.committeeSelect.disabled = true;
     els.addDelegationBtn.disabled = false;
     els.committeeSelect.value = state.currentUser.committeeCode;
@@ -659,15 +722,23 @@ async function updateDelegationOptions(code) {
     els.delegationSelect.disabled = true;
     return;
   }
-  if (!state.currentUser || code !== state.currentUser.committeeCode) {
+  // Allow delegation selection if user is logged in and committee matches
+  if (!state.currentUser) {
+    els.delegationSelect.innerHTML = '<option value="">Select delegation</option>';
+    els.delegationSelect.disabled = true;
+    return;
+  }
+  // Only restrict if the selected committee doesn't match user's committee
+  if (code !== state.currentUser.committeeCode) {
     els.delegationSelect.innerHTML = '<option value="">Select delegation</option>';
     els.delegationSelect.disabled = true;
     return;
   }
   try {
     const delegations = await fetchDelegations();
-    if (delegations.length === 0) {
-      els.delegationSelect.innerHTML = '<option value="">No delegations</option>';
+    console.log('Fetched delegations:', delegations); // Debug log
+    if (!delegations || delegations.length === 0) {
+      els.delegationSelect.innerHTML = '<option value="">No delegations available</option>';
       els.delegationSelect.disabled = true;
       return;
     }
@@ -675,11 +746,16 @@ async function updateDelegationOptions(code) {
     const options =
       '<option value="">Select delegation</option>' +
       delegations
+        .filter((del) => del.delegation && del.delegation.trim() !== '') // Filter out empty delegations
         .map(
-          (del) => `<option value="${del.delegation}" data-flag="${del.flag}">${del.flag} ${del.delegation}</option>`
+          (del) => `<option value="${del.delegation}" data-flag="${del.flag || '🏳️'}">${del.flag || '🏳️'} ${del.delegation}</option>`
         )
         .join('');
     els.delegationSelect.innerHTML = options;
+    if (options === '<option value="">Select delegation</option>') {
+      els.delegationSelect.innerHTML = '<option value="">No delegations available</option>';
+      els.delegationSelect.disabled = true;
+    }
   } catch (err) {
     console.error('Failed to load delegations:', err);
     els.delegationSelect.innerHTML = '<option value="">Error loading delegations</option>';
@@ -877,6 +953,27 @@ async function checkExistingSession() {
       document.querySelectorAll('.chair-only').forEach((el) => {
         el.classList[state.currentUser.role === 'chair' ? 'remove' : 'add']('hidden');
       });
+      
+      // Show/hide appropriate inbox tabs based on role
+      const inboxTab = document.getElementById('inbox-tab');
+      const toChairsTab = document.getElementById('to-chairs-tab');
+      const delegateNotesTab = document.getElementById('delegate-notes-tab');
+      
+      if (state.currentUser.role === 'chair') {
+        // Hide regular inbox, show chair-specific inboxes
+        if (inboxTab) inboxTab.classList.add('hidden');
+        if (toChairsTab) toChairsTab.classList.remove('hidden');
+        if (delegateNotesTab) delegateNotesTab.classList.remove('hidden');
+        // Switch to "To Chairs" tab by default
+        switchTab('to-chairs');
+      } else {
+        // Show regular inbox, hide chair-specific inboxes
+        if (inboxTab) inboxTab.classList.remove('hidden');
+        if (toChairsTab) toChairsTab.classList.add('hidden');
+        if (delegateNotesTab) delegateNotesTab.classList.add('hidden');
+        // Switch to regular inbox tab
+        switchTab('inbox');
+      }
       els.committeeSelect.disabled = true;
       els.addDelegationBtn.disabled = false;
       els.committeeSelect.value = state.currentUser.committeeCode;

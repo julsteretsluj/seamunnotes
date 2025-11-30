@@ -94,7 +94,9 @@
             </header>
 
             <nav class="tabs" role="tablist">
-              <button class="tab active" data-tab="inbox">Inbox</button>
+              <button class="tab active" data-tab="inbox" id="inbox-tab">Inbox</button>
+              <button class="tab chair-only" data-tab="to-chairs" id="to-chairs-tab">To Chairs</button>
+              <button class="tab chair-only" data-tab="delegate-notes" id="delegate-notes-tab">Delegate Notes</button>
               <button class="tab" data-tab="compose">Compose</button>
               <button class="tab chair-only" data-tab="starred">Starred</button>
               <button class="tab chair-only" data-tab="concern">⚠️ Notes of Concern</button>
@@ -106,6 +108,20 @@
                   <p>No notes yet. Once delegations send you notes, they will arrive here instantly.</p>
                 </div>
                 <div id="inbox-list" class="card-grid"></div>
+              </div>
+
+              <div class="panel-body hidden chair-only" data-panel="to-chairs">
+                <div id="to-chairs-empty" class="empty-state hidden">
+                  <p>No notes directed to chairs yet.</p>
+                </div>
+                <div id="to-chairs-list" class="card-grid"></div>
+              </div>
+
+              <div class="panel-body hidden chair-only" data-panel="delegate-notes">
+                <div id="delegate-notes-empty" class="empty-state hidden">
+                  <p>No delegate-to-delegate notes yet.</p>
+                </div>
+                <div id="delegate-notes-list" class="card-grid"></div>
               </div>
 
               <div class="panel-body hidden" data-panel="compose">
