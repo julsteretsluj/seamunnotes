@@ -366,6 +366,48 @@ h4 {
   transform: scale(1.2);
 }
 
+.note-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.reply-btn {
+  background: rgba(94, 234, 212, 0.1);
+  border: 1px solid rgba(94, 234, 212, 0.3);
+  color: var(--primary);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.reply-btn:hover {
+  background: rgba(94, 234, 212, 0.2);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.reply-btn:active {
+  transform: translateY(0);
+}
+
+.concern-note {
+  border-color: rgba(244, 63, 94, 0.4);
+  background: rgba(244, 63, 94, 0.05);
+}
+
+.concern-badge {
+  background: rgba(244, 63, 94, 0.2);
+  color: var(--danger);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
 .recipient-zone {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));

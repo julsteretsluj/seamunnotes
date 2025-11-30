@@ -31,6 +31,7 @@ router.get('/', authMiddleware, async (req, res) => {
           `SELECT is_starred FROM note_recipients WHERE note_id = ? AND recipient_type = 'user' AND recipient_ref = ?`,
           [note.id, String(userId)]
         );
+        const isConcern = checkInappropriateContent(note.topic, note.content);
         return {
           id: note.id,
           fromId: note.from_user_id,
@@ -43,7 +44,8 @@ router.get('/', authMiddleware, async (req, res) => {
           timestamp: note.created_at,
           recipients: recipients.map(r => ({ type: r.recipient_type, id: r.recipient_ref })),
           isRead: isRead.length > 0 ? Boolean(isRead[0].is_read) : false,
-          isStarred: isStarred.length > 0 ? Boolean(isStarred[0].is_starred) : false
+          isStarred: isStarred.length > 0 ? Boolean(isStarred[0].is_starred) : false,
+          isConcern: isConcern
         };
       })
     );
@@ -52,6 +54,34 @@ router.get('/', authMiddleware, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+function checkInappropriateContent(topic, content) {
+  const APPROVED_TOPICS = [
+    'Bloc Forming',
+    'POIs or POCs',
+    'Unrelated Questions'
+  ];
+
+  // List of inappropriate words/phrases (case-insensitive)
+  const inappropriateWords = [
+    'fuck', 'shit', 'damn', 'bitch', 'asshole', 'bastard', 'crap',
+    'hate', 'kill', 'die', 'stupid', 'idiot', 'moron', 'retard',
+    'sex', 'sexual', 'nude', 'naked', 'porn', 'pornography',
+    'drug', 'cocaine', 'heroin', 'marijuana', 'weed', 'alcohol',
+    'violence', 'fight', 'attack', 'hurt', 'harm', 'threat', 'threaten'
+  ];
+
+  // Check content for inappropriate words
+  const contentLower = content.toLowerCase();
+  const hasInappropriateLanguage = inappropriateWords.some(word => 
+    contentLower.includes(word.toLowerCase())
+  );
+
+  // Check for inappropriate topics (anything not in the approved list)
+  const hasInappropriateTopic = !APPROVED_TOPICS.includes(topic);
+
+  return hasInappropriateLanguage || hasInappropriateTopic;
+}
 
 router.post('/', authMiddleware, async (req, res) => {
   try {
@@ -72,8 +102,41 @@ router.post('/', authMiddleware, async (req, res) => {
         [noteId, recipient.type, recipient.id]
       );
     }
+
+    // Check for inappropriate content and automatically star for all chairs
+    const isInappropriate = checkInappropriateContent(topic, content);
+    if (isInappropriate) {
+      // Get all chairs in the committee
+      const chairs = await query(
+        `SELECT id FROM users WHERE committee_code = ? AND role = 'chair'`,
+        [req.user.committee]
+      );
+      // Automatically star the note for all chairs
+      for (const chair of chairs) {
+        const existing = await query(
+          `SELECT id FROM note_recipients 
+           WHERE note_id = ? AND recipient_type = 'user' AND recipient_ref = ?`,
+          [noteId, String(chair.id)]
+        );
+        if (existing.length > 0) {
+          await run(
+            `UPDATE note_recipients 
+             SET is_starred = 1 
+             WHERE note_id = ? AND recipient_type = 'user' AND recipient_ref = ?`,
+            [noteId, String(chair.id)]
+          );
+        } else {
+          await run(
+            `INSERT INTO note_recipients (note_id, recipient_type, recipient_ref, is_starred)
+             VALUES (?, 'user', ?, 1)`,
+            [noteId, String(chair.id)]
+          );
+        }
+      }
+    }
+
     broadcastNote(req.user.committee, noteId);
-    res.json({ id: noteId });
+    res.json({ id: noteId, isConcern: isInappropriate });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

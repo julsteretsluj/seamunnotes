@@ -97,6 +97,7 @@
               <button class="tab active" data-tab="inbox">Inbox</button>
               <button class="tab" data-tab="compose">Compose</button>
               <button class="tab chair-only" data-tab="starred">Starred</button>
+              <button class="tab chair-only" data-tab="concern">⚠️ Notes of Concern</button>
             </nav>
 
             <div class="tab-panels">
@@ -144,17 +145,6 @@
                       </label>
                       <div id="selected-delegations" class="selected-list"></div>
                     </div>
-                    <div class="recipient-column">
-                      <h3>Individuals</h3>
-                      <div id="user-list" class="checkbox-grid"></div>
-                    </div>
-                    <div class="recipient-column">
-                      <h3>Chair Team</h3>
-                      <label class="checkbox">
-                        <input type="checkbox" id="chairs-checkbox" />
-                        <span>Send to all chairs</span>
-                      </label>
-                    </div>
                   </div>
                   <button type="submit" class="btn primary">
                     Send note
@@ -167,6 +157,13 @@
                   <p>Star important notes to track bloc updates and urgent motions.</p>
                 </div>
                 <div id="starred-list" class="card-grid"></div>
+              </div>
+
+              <div class="panel-body hidden" data-panel="concern">
+                <div id="concern-empty" class="empty-state hidden">
+                  <p>No notes of concern. Notes with inappropriate topics or language are automatically flagged here.</p>
+                </div>
+                <div id="concern-list" class="card-grid"></div>
               </div>
             </div>
           </div>

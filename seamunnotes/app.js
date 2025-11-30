@@ -4,8 +4,7 @@ const WS_URL = 'wss://seamunnotes.onrender.com/ws';
 const TOPICS = [
   'Bloc Forming',
   'POIs or POCs',
-  'Unrelated Questions',
-  'Informal Conversations'
+  'Unrelated Questions'
 ];
 
 const COMMITTEES = [
@@ -100,13 +99,13 @@ const els = {
   addDelegationBtn: document.getElementById('add-delegation-btn'),
   selectedDelegations: document.getElementById('selected-delegations'),
   togglePassword: document.getElementById('toggle-password'),
-  userList: document.getElementById('user-list'),
-  chairsCheckbox: document.getElementById('chairs-checkbox'),
   composeForm: document.getElementById('compose-form'),
   inboxList: document.getElementById('inbox-list'),
   inboxEmpty: document.getElementById('inbox-empty'),
   starredList: document.getElementById('starred-list'),
   starredEmpty: document.getElementById('starred-empty'),
+  concernList: document.getElementById('concern-list'),
+  concernEmpty: document.getElementById('concern-empty'),
   userChip: document.getElementById('user-chip'),
   dayChip: document.getElementById('day-chip'),
   logoutBtn: document.getElementById('logout-btn'),
@@ -263,6 +262,28 @@ function renderLoginOptions(code) {
       .join('');
 }
 
+function checkInappropriateContent(topic, content) {
+  // List of inappropriate words/phrases (case-insensitive)
+  const inappropriateWords = [
+    'fuck', 'shit', 'damn', 'bitch', 'asshole', 'bastard', 'crap',
+    'hate', 'kill', 'die', 'stupid', 'idiot', 'moron', 'retard',
+    'sex', 'sexual', 'nude', 'naked', 'porn', 'pornography',
+    'drug', 'cocaine', 'heroin', 'marijuana', 'weed', 'alcohol',
+    'violence', 'fight', 'attack', 'hurt', 'harm', 'threat', 'threaten'
+  ];
+
+  // Check content for inappropriate words
+  const contentLower = content.toLowerCase();
+  const hasInappropriateLanguage = inappropriateWords.some(word => 
+    contentLower.includes(word.toLowerCase())
+  );
+
+  // Check for inappropriate topics (anything not in the approved list)
+  const hasInappropriateTopic = !TOPICS.includes(topic);
+
+  return hasInappropriateLanguage || hasInappropriateTopic;
+}
+
 function renderTopicOptions() {
   els.topicSelect.innerHTML =
     '<option value="">Select a topic</option>' +
@@ -270,29 +291,8 @@ function renderTopicOptions() {
 }
 
 async function renderRecipients(committeeCode) {
-  if (!committeeCode) {
-    els.userList.innerHTML =
-      '<div class="empty-state" style="padding:1rem;">Log in to see delegates from your committee.</div>';
-    return;
-  }
-  await fetchUsers();
-  const list = state.users
-    .filter(
-      (user) =>
-        user.committeeCode === committeeCode &&
-        user.id !== state.currentUser?.id &&
-        (!user.credentialsDay || user.credentialsDay === state.currentDay)
-    )
-    .map(
-      (user) => `
-        <label class="checkbox">
-          <input type="checkbox" name="userRecipient" value="${user.id}" />
-          <span>${user.flag} ${user.displayName}</span>
-        </label>
-      `
-    )
-    .join('');
-  els.userList.innerHTML = list || '<div class="empty-state" style="padding:1rem;">No other delegates found.</div>';
+  // Function kept for compatibility but no longer renders individual users
+  // Recipients are now only selected via delegations
 }
 
 function noteVisibleToUser(note, user) {
@@ -346,23 +346,22 @@ async function toggleStar(noteId) {
 }
 
 function formatRecipients(note) {
-  const labels = note.recipients.map((recipient) => {
-    if (recipient.type === 'user') {
-      const user = state.users.find((u) => String(u.id) === String(recipient.id));
-      return user ? `${user.flag} ${user.displayName || user.delegation || user.username}` : 'Unknown delegate';
-    }
-    if (recipient.type === 'delegation') {
-      const user = state.users.find(
-        (u) => u.delegation === recipient.id && u.committeeCode === note.fromCommittee
-      );
-      const flag = user?.flag || '🏳️';
-      return `${flag} ${recipient.id}`;
-    }
-    if (recipient.type === 'chairs') {
-      return `⭐ Chair team (${recipient.id})`;
-    }
-    return recipient.id;
-  });
+  const labels = note.recipients
+    .filter((recipient) => recipient.type !== 'chairs') // Hide chairs from recipient display
+    .map((recipient) => {
+      if (recipient.type === 'user') {
+        const user = state.users.find((u) => String(u.id) === String(recipient.id));
+        return user ? `${user.flag} ${user.displayName || user.delegation || user.username}` : 'Unknown delegate';
+      }
+      if (recipient.type === 'delegation') {
+        const user = state.users.find(
+          (u) => u.delegation === recipient.id && u.committeeCode === note.fromCommittee
+        );
+        const flag = user?.flag || '🏳️';
+        return `${flag} ${recipient.id}`;
+      }
+      return recipient.id;
+    });
   return labels.join(', ');
 }
 
@@ -370,8 +369,10 @@ function renderNotes() {
   if (!state.currentUser) {
     els.inboxList.innerHTML = '';
     els.starredList.innerHTML = '';
+    els.concernList.innerHTML = '';
     els.inboxEmpty.classList.remove('hidden');
     els.starredEmpty.classList.remove('hidden');
+    els.concernEmpty.classList.remove('hidden');
     return;
   }
   const visibleNotes = state.notes.filter((note) => noteVisibleToUser(note, state.currentUser));
@@ -386,11 +387,11 @@ function renderNotes() {
   els.inboxList.innerHTML = visibleNotes
     .map(
       (note) => `
-      <article class="note-card ${noteRead(note) ? '' : 'new'}" data-note="${note.id}">
+      <article class="note-card ${noteRead(note) ? '' : 'new'} ${note.isConcern ? 'concern-note' : ''}" data-note="${note.id}">
         <div class="note-header">
           <div>
             <p class="note-from">${note.fromFlag} ${note.fromDelegation}</p>
-            <span class="note-topic">${note.topic}</span>
+            <span class="note-topic ${note.isConcern ? 'concern-badge' : ''}">${note.isConcern ? '⚠️ ' : ''}${note.topic}</span>
           </div>
           ${
             state.currentUser.role === 'chair'
@@ -404,6 +405,9 @@ function renderNotes() {
         <div class="note-meta">
           <span>${utils.formatDate(note.timestamp)}</span>
           <span>To: ${formatRecipients(note)}</span>
+        </div>
+        <div class="note-actions">
+          <button class="reply-btn" data-reply="${note.id}">Reply</button>
         </div>
       </article>
     `
@@ -432,10 +436,46 @@ function renderNotes() {
           <span>${utils.formatDate(note.timestamp)}</span>
           <span>To: ${formatRecipients(note)}</span>
         </div>
+        <div class="note-actions">
+          <button class="reply-btn" data-reply="${note.id}">Reply</button>
+        </div>
       </article>
     `
     )
     .join('');
+
+  // Render Notes of Concern (chair-only)
+  if (state.currentUser.role === 'chair') {
+    const concernNotes = visibleNotes.filter((note) => note.isConcern);
+    if (concernNotes.length === 0) {
+      els.concernEmpty.classList.remove('hidden');
+    } else {
+      els.concernEmpty.classList.add('hidden');
+    }
+    els.concernList.innerHTML = concernNotes
+      .map(
+        (note) => `
+        <article class="note-card concern-note" data-note="${note.id}">
+          <div class="note-header">
+            <div>
+              <p class="note-from">${note.fromFlag} ${note.fromDelegation}</p>
+              <span class="note-topic concern-badge">⚠️ ${note.topic}</span>
+            </div>
+            <button class="star-btn active" data-star="${note.id}">★</button>
+          </div>
+          <div class="note-content">${note.content}</div>
+          <div class="note-meta">
+            <span>${utils.formatDate(note.timestamp)}</span>
+            <span>To: ${formatRecipients(note)}</span>
+          </div>
+          <div class="note-actions">
+            <button class="reply-btn" data-reply="${note.id}">Reply</button>
+          </div>
+        </article>
+      `
+      )
+      .join('');
+  }
 
   document.querySelectorAll('[data-note]').forEach((card) => {
     card.addEventListener('click', () => {
@@ -447,6 +487,12 @@ function renderNotes() {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       toggleStar(btn.dataset.star);
+    })
+  );
+  document.querySelectorAll('[data-reply]').forEach((btn) =>
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      handleReply(btn.dataset.reply);
     })
   );
 }
@@ -550,44 +596,30 @@ function handleLogout() {
 }
 
 function collectRecipients() {
-  const userRecipients = Array.from(
-    document.querySelectorAll('input[name="userRecipient"]:checked')
-  )
-    .map((input) => state.users.find((u) => String(u.id) === String(input.value)))
-    .filter(
-      (user) =>
-        user &&
-        state.currentUser &&
-        user.committeeCode === state.currentUser.committeeCode &&
-        user.id !== state.currentUser.id
-    )
-    .map((user) => ({ type: 'user', id: String(user.id) }));
-
   const delegationRecipients = Array.from(
     document.querySelectorAll('input[name="selectedDelegation"]')
   ).map((input) => ({ type: 'delegation', id: input.value }));
 
-  const recipients = [...userRecipients, ...delegationRecipients];
-  if (els.chairsCheckbox.checked && state.currentUser) {
-    recipients.push({ type: 'chairs', id: state.currentUser.committeeCode });
-  }
-
   const unique = [];
   const seen = new Set();
-  recipients.forEach((recipient) => {
+  delegationRecipients.forEach((recipient) => {
     const key = `${recipient.type}-${recipient.id}`;
     if (!seen.has(key)) {
       seen.add(key);
       unique.push(recipient);
     }
   });
+
+  // Automatically add chairs as recipients for all delegate-to-delegate notes
+  // (but not if the sender is already a chair)
+  if (state.currentUser && state.currentUser.role !== 'chair' && unique.length > 0) {
+    unique.push({ type: 'chairs', id: state.currentUser.committeeCode });
+  }
+
   return unique;
 }
 
 function clearRecipientSelections() {
-  document.querySelectorAll('input[name="userRecipient"]').forEach((input) => {
-    input.checked = false;
-  });
   els.selectedDelegations.innerHTML = '';
   if (state.currentUser) {
     els.committeeSelect.value = state.currentUser.committeeCode;
@@ -600,7 +632,6 @@ function clearRecipientSelections() {
     els.addDelegationBtn.disabled = true;
     updateDelegationOptions('');
   }
-  els.chairsCheckbox.checked = false;
 }
 
 function populateCommitteeSelect() {
@@ -690,6 +721,67 @@ function addDelegationSelection() {
   `;
   chip.querySelector('button').addEventListener('click', () => chip.remove());
   els.selectedDelegations.appendChild(chip);
+}
+
+async function handleReply(noteId) {
+  if (!state.currentUser) return;
+  
+  const note = state.notes.find((n) => String(n.id) === String(noteId));
+  if (!note) {
+    alert('Note not found.');
+    return;
+  }
+
+  // Find the original sender
+  let originalSender = state.users.find((u) => String(u.id) === String(note.fromId));
+  if (!originalSender) {
+    // Try fetching users if not found
+    await fetchUsers();
+    originalSender = state.users.find((u) => String(u.id) === String(note.fromId));
+    if (!originalSender) {
+      alert('Original sender not found.');
+      return;
+    }
+  }
+
+  // Switch to compose tab
+  switchTab('compose');
+
+  // Clear previous selections
+  clearRecipientSelections();
+
+  // Add the sender's delegation as a recipient
+  if (originalSender.delegation && originalSender.delegation !== state.currentUser.delegation) {
+    // Check if delegation is already added
+    const existing = Array.from(
+      document.querySelectorAll('input[name="selectedDelegation"]')
+    ).some((input) => input.value === originalSender.delegation);
+    
+    if (!existing) {
+      // Programmatically add the delegation
+      const flag = originalSender.flag || '🏳️';
+      const chip = document.createElement('div');
+      chip.className = 'selected-chip';
+      chip.dataset.delegation = originalSender.delegation;
+      chip.innerHTML = `
+        <span>${flag} ${originalSender.delegation}</span>
+        <button type="button" aria-label="Remove delegation">×</button>
+        <input type="hidden" name="selectedDelegation" value="${originalSender.delegation}" />
+      `;
+      chip.querySelector('button').addEventListener('click', () => chip.remove());
+      els.selectedDelegations.appendChild(chip);
+    }
+  }
+
+  // Pre-fill topic with the same topic (user can change it)
+  els.topicSelect.value = note.topic;
+
+  // Pre-fill content with a quote of the original message
+  const quotedContent = `Re: ${note.topic}\n\n"${note.content}"\n\n`;
+  els.noteContent.value = quotedContent;
+  els.noteContent.focus();
+  // Move cursor to end
+  els.noteContent.setSelectionRange(quotedContent.length, quotedContent.length);
 }
 
 async function handleCompose(event) {
