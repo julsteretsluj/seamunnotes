@@ -104,8 +104,6 @@ const els = {
   addDelegationBtn: document.getElementById('add-delegation-btn'),
   selectedDelegations: document.getElementById('selected-delegations'),
   togglePassword: document.getElementById('toggle-password'),
-  userList: document.getElementById('user-list'),
-  chairsCheckbox: document.getElementById('chairs-checkbox'),
   composeForm: document.getElementById('compose-form'),
   inboxList: document.getElementById('inbox-list'),
   inboxEmpty: document.getElementById('inbox-empty'),
@@ -197,24 +195,11 @@ function delegationsByCommittee() {
   return map;
 }
 
-function renderRecipients(committeeCode) {
-  if (!committeeCode) {
-    els.userList.innerHTML =
-      '<div class="empty-state" style="padding:1rem;">Log in to see delegates from your committee.</div>';
-    return;
-  }
-  const list = state.users
-    .filter((user) => user.committeeCode === committeeCode && user.id !== state.currentUser?.id)
-    .map(
-      (user) => `
-        <label class="checkbox">
-          <input type="checkbox" name="userRecipient" value="${user.id}" />
-          <span>${user.flag} ${user.name} (${user.role === 'chair' ? 'Chair' : user.delegation})</span>
-        </label>
-      `
-    )
-    .join('');
-  els.userList.innerHTML = list || '<div class="empty-state" style="padding:1rem;">No other delegates found.</div>';
+async function renderRecipients(committeeCode) {
+  // Function kept for compatibility but no longer renders individual users
+  // Recipients are now only selected via delegations
+  // This function is intentionally empty as individual user selection was removed
+  return;
 }
 
 function noteVisibleToUser(note, user) {
@@ -421,44 +406,30 @@ function handleLogout() {
 }
 
 function collectRecipients() {
-  const userRecipients = Array.from(
-    document.querySelectorAll('input[name="userRecipient"]:checked')
-  )
-    .map((input) => state.users.find((u) => u.id === input.value))
-    .filter(
-      (user) =>
-        user &&
-        state.currentUser &&
-        user.committeeCode === state.currentUser.committeeCode &&
-        user.id !== state.currentUser.id
-    )
-    .map((user) => ({ type: 'user', id: user.id }));
-
   const delegationRecipients = Array.from(
     document.querySelectorAll('input[name="selectedDelegation"]')
   ).map((input) => ({ type: 'delegation', id: input.value }));
 
-  const recipients = [...userRecipients, ...delegationRecipients];
-  if (els.chairsCheckbox.checked && state.currentUser) {
-    recipients.push({ type: 'chairs', id: state.currentUser.committeeCode });
-  }
-
   const unique = [];
   const seen = new Set();
-  recipients.forEach((recipient) => {
+  delegationRecipients.forEach((recipient) => {
     const key = `${recipient.type}-${recipient.id}`;
     if (!seen.has(key)) {
       seen.add(key);
       unique.push(recipient);
     }
   });
+  
+  // Automatically add chairs as recipients for all delegate-to-delegate notes
+  // (but not if the sender is already a chair)
+  if (state.currentUser && state.currentUser.role !== 'chair' && unique.length > 0) {
+    unique.push({ type: 'chairs', id: state.currentUser.committeeCode });
+  }
+
   return unique;
 }
 
 function clearRecipientSelections() {
-  document.querySelectorAll('input[name="userRecipient"]').forEach((input) => {
-    input.checked = false;
-  });
   els.selectedDelegations.innerHTML = '';
   if (state.currentUser) {
     els.committeeSelect.value = state.currentUser.committeeCode;
@@ -471,7 +442,6 @@ function clearRecipientSelections() {
     els.addDelegationBtn.disabled = true;
     updateDelegationOptions('');
   }
-  els.chairsCheckbox.checked = false;
 }
 
 function populateCommitteeSelect() {
