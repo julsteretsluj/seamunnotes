@@ -383,19 +383,39 @@ async function setNoteRead(noteId) {
 }
 
 async function toggleStar(noteId) {
-  if (state.currentUser.role !== 'chair') return;
+  if (state.currentUser.role !== 'chair') {
+    alert('Only chairs can star notes.');
+    return;
+  }
+  if (!state.token) {
+    alert('You must be logged in to star notes.');
+    return;
+  }
   try {
-    const note = state.notes.find(n => n.id === noteId);
+    const note = state.notes.find(n => String(n.id) === String(noteId));
+    if (!note) {
+      alert('Note not found.');
+      return;
+    }
     const newStarred = !noteStarred(note);
     await apiCall(`/notes/${noteId}/star`, {
       method: 'PATCH',
       body: JSON.stringify({ starred: newStarred })
     });
+    // Update the note's starred status
     note.isStarred = newStarred;
-  renderNotes();
+    renderNotes();
   } catch (err) {
     console.error('Failed to toggle star:', err);
-    alert('Failed to star note. Only chairs can star notes.');
+    const errorMsg = err.message || 'Unknown error';
+    if (errorMsg.includes('401') || errorMsg.includes('Invalid token')) {
+      alert('Your session has expired. Please log in again.');
+      handleLogout();
+    } else if (errorMsg.includes('403') || errorMsg.includes('Only chairs')) {
+      alert('Only chairs can star notes.');
+    } else {
+      alert(`Failed to star note: ${errorMsg}`);
+    }
   }
 }
 
