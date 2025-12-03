@@ -433,6 +433,37 @@ h4 {
   flex-wrap: wrap;
 }
 
+.chair-notice {
+  margin-top: 1rem;
+  padding: 1rem 1.5rem;
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+  border-radius: 12px;
+  color: var(--text);
+}
+
+.chair-notice p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.suspended-banner {
+  margin-top: 1rem;
+  padding: 1rem 1.5rem;
+  background: color-mix(in srgb, var(--danger) 20%, transparent);
+  border: 2px solid var(--danger);
+  border-radius: 12px;
+  color: var(--text);
+  text-align: center;
+  font-weight: 500;
+}
+
+.suspended-banner p {
+  margin: 0;
+  font-size: 1rem;
+}
+
 .tabs {
   margin-top: 1.5rem;
   display: flex;

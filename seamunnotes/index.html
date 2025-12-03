@@ -111,9 +111,18 @@
               </div>
               <div class="dashboard-actions">
                 <button class="btn subtle" id="export-notes">Export notes</button>
+                <button class="btn subtle chair-only" id="suspend-toggle" style="display: none;">Suspend Note Passing</button>
                 <button class="btn ghost" id="logout-btn">Log out</button>
               </div>
             </header>
+            
+            <div class="chair-notice chair-only" id="chair-export-notice" style="display: none;">
+              <p><strong>📋 Important:</strong> Please export all notes at the end of each committee day for record-keeping purposes.</p>
+            </div>
+            
+            <div class="suspended-banner hidden" id="suspended-banner">
+              <p>⚠️ <strong>Note passing is currently suspended.</strong> Notes cannot be sent until the chair resumes note passing.</p>
+            </div>
 
             <nav class="tabs" role="tablist">
               <button class="tab active" data-tab="inbox" id="inbox-tab">Inbox</button>

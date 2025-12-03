@@ -82,7 +82,8 @@ const state = {
   currentUser: null,
   currentDay: 1,
   token: null,
-  ws: null
+  ws: null,
+  notePassingSuspended: false
 };
 
 const els = {
@@ -120,7 +121,10 @@ const els = {
   tabs: document.querySelectorAll('.tab'),
   panels: document.querySelectorAll('.panel-body'),
   dashActions: document.querySelector('.dashboard-actions'),
-  exportNotes: document.getElementById('export-notes')
+  exportNotes: document.getElementById('export-notes'),
+  suspendToggle: document.getElementById('suspend-toggle'),
+  chairExportNotice: document.getElementById('chair-export-notice'),
+  suspendedBanner: document.getElementById('suspended-banner')
 };
 
 const utils = {
@@ -717,6 +721,7 @@ async function handleLogin(event) {
     await updateDelegationOptions(state.currentUser.committeeCode);
     await renderRecipients(state.currentUser.committeeCode);
     await fetchNotes();
+    await fetchSuspendedState();
     connectWebSocket();
   } catch (err) {
     alert('Login failed: ' + (err.message || 'Invalid credentials'));
@@ -956,6 +961,12 @@ async function handleCompose(event) {
   event.preventDefault();
   if (!state.currentUser) return;
 
+  // Check if note passing is suspended
+  if (state.notePassingSuspended) {
+    alert('Note passing is currently suspended. Please wait for the chair to resume note passing.');
+    return;
+  }
+
   const topic = els.topicSelect.value;
   const content = els.noteContent.value.trim();
   const recipients = collectRecipients();
@@ -974,7 +985,12 @@ async function handleCompose(event) {
     await fetchNotes();
   alert('Note sent successfully.');
   } catch (err) {
-    alert('Failed to send note: ' + (err.message || 'Unknown error'));
+    const errorMsg = err.message || 'Unknown error';
+    if (errorMsg.includes('suspended')) {
+      state.notePassingSuspended = true;
+      updateSuspendedUI();
+    }
+    alert('Failed to send note: ' + errorMsg);
   }
 }
 
@@ -1071,6 +1087,8 @@ async function checkExistingSession() {
       els.committeeSelect.value = state.currentUser.committeeCode;
       await updateDelegationOptions(state.currentUser.committeeCode);
       await renderRecipients(state.currentUser.committeeCode);
+      await fetchSuspendedState();
+      await fetchSuspendedState();
     } catch (err) {
       console.error('Session restore failed:', err);
       localStorage.removeItem('token');
@@ -1159,6 +1177,9 @@ function init() {
   els.loginForm.addEventListener('submit', handleLogin);
   els.logoutBtn.addEventListener('click', handleLogout);
   els.composeForm.addEventListener('submit', handleCompose);
+  if (els.suspendToggle) {
+    els.suspendToggle.addEventListener('click', toggleSuspendedState);
+  }
   els.resetDemoData.addEventListener('click', () => {
     if (confirm('This will reset all demo data. Continue?')) {
       handleLogout();

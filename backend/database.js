@@ -52,6 +52,11 @@ function createTables() {
         is_read INTEGER DEFAULT 0,
         is_starred INTEGER DEFAULT 0,
         FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE
+      )`,
+      `CREATE TABLE IF NOT EXISTS committee_settings (
+        committee_code TEXT PRIMARY KEY,
+        note_passing_suspended INTEGER DEFAULT 0,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )`
     ];
 

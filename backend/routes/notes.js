@@ -85,6 +85,16 @@ function checkInappropriateContent(topic, content) {
 
 router.post('/', authMiddleware, async (req, res) => {
   try {
+    // Check if note passing is suspended for this committee
+    const settings = await query(
+      `SELECT note_passing_suspended FROM committee_settings WHERE committee_code = ?`,
+      [req.user.committee]
+    );
+    const isSuspended = settings.length > 0 && Boolean(settings[0].note_passing_suspended);
+    if (isSuspended) {
+      return res.status(403).json({ error: 'Note passing is currently suspended. Please wait for the chair to resume note passing.' });
+    }
+
     const { topic, content, recipients } = req.body;
     if (!topic || !content || !Array.isArray(recipients) || recipients.length === 0) {
       return res.status(400).json({ error: 'Topic, content, and recipients required.' });
@@ -199,6 +209,41 @@ router.patch('/:id/star', authMiddleware, async (req, res) => {
       );
     }
     res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get suspended state for committee
+router.get('/suspended', authMiddleware, async (req, res) => {
+  try {
+    const settings = await query(
+      `SELECT note_passing_suspended FROM committee_settings WHERE committee_code = ?`,
+      [req.user.committee]
+    );
+    const isSuspended = settings.length > 0 && Boolean(settings[0].note_passing_suspended);
+    res.json({ suspended: isSuspended });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Toggle suspended state (chair only)
+router.post('/suspend', authMiddleware, async (req, res) => {
+  try {
+    if (req.user.role !== 'chair') {
+      return res.status(403).json({ error: 'Only chairs can suspend note passing' });
+    }
+    const { suspended } = req.body;
+    await run(
+      `INSERT INTO committee_settings (committee_code, note_passing_suspended, updated_at)
+       VALUES (?, ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(committee_code) DO UPDATE SET
+       note_passing_suspended = ?,
+       updated_at = CURRENT_TIMESTAMP`,
+      [req.user.committee, suspended ? 1 : 0, suspended ? 1 : 0]
+    );
+    res.json({ success: true, suspended: Boolean(suspended) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
