@@ -11,10 +11,29 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="styles.css" />
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="icon" type="image/png" href="logo.png" />
   </head>
   <body>
     <div id="app">
+      <div class="theme-controls">
+        <button class="theme-toggle-btn" id="dark-mode-toggle" aria-label="Toggle dark mode">
+          <span id="dark-mode-icon">🌙</span>
+        </button>
+        <div class="theme-selector">
+          <span class="theme-label">Theme</span>
+          <div class="theme-options" id="theme-options">
+            <button class="theme-option" data-theme="red">Red Theme</button>
+            <button class="theme-option" data-theme="orange">Orange Theme</button>
+            <button class="theme-option" data-theme="yellow">Yellow Theme</button>
+            <button class="theme-option" data-theme="green">Green Theme</button>
+            <button class="theme-option active" data-theme="blue">Blue Theme</button>
+            <button class="theme-option" data-theme="purple">Purple Theme</button>
+            <button class="theme-option" data-theme="pink">Pink Theme</button>
+            <button class="theme-option" data-theme="grey">Grey Theme</button>
+            <button class="theme-option" data-theme="monochrome">Monochrome Theme</button>
+          </div>
+        </div>
+      </div>
       <header class="hero">
         <div class="hero__content">
           <h1>Digital Note Passing HQ</h1>
@@ -95,6 +114,7 @@
 
             <nav class="tabs" role="tablist">
               <button class="tab active" data-tab="inbox" id="inbox-tab">Inbox</button>
+              <button class="tab" data-tab="sent" id="sent-tab">Sent</button>
               <button class="tab chair-only" data-tab="to-chairs" id="to-chairs-tab">To Chairs</button>
               <button class="tab chair-only" data-tab="delegate-notes" id="delegate-notes-tab">Delegate Notes</button>
               <button class="tab" data-tab="compose">Compose</button>
@@ -108,6 +128,13 @@
                   <p>No notes yet. Once delegations send you notes, they will arrive here instantly.</p>
                 </div>
                 <div id="inbox-list" class="card-grid"></div>
+              </div>
+
+              <div class="panel-body hidden" data-panel="sent">
+                <div id="sent-empty" class="empty-state hidden">
+                  <p>You haven't sent any notes yet. Compose a note to get started.</p>
+                </div>
+                <div id="sent-list" class="card-grid"></div>
               </div>
 
               <div class="panel-body hidden chair-only" data-panel="to-chairs">

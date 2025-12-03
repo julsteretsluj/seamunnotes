@@ -102,6 +102,8 @@ const els = {
   composeForm: document.getElementById('compose-form'),
   inboxList: document.getElementById('inbox-list'),
   inboxEmpty: document.getElementById('inbox-empty'),
+  sentList: document.getElementById('sent-list'),
+  sentEmpty: document.getElementById('sent-empty'),
   toChairsList: document.getElementById('to-chairs-list'),
   toChairsEmpty: document.getElementById('to-chairs-empty'),
   delegateNotesList: document.getElementById('delegate-notes-list'),
@@ -439,7 +441,8 @@ function formatRecipients(note) {
   return labels.join(', ');
 }
 
-function renderNoteCard(note) {
+function renderNoteCard(note, isSent = false) {
+  const isOwnNote = state.currentUser && String(note.fromId) === String(state.currentUser.id);
   return `
     <article class="note-card ${noteRead(note) ? '' : 'new'} ${note.isConcern ? 'concern-note' : ''}" data-note="${note.id}">
       <div class="note-header">
@@ -458,11 +461,13 @@ function renderNoteCard(note) {
       <div class="note-content">${note.content}</div>
       <div class="note-meta">
         <span>${utils.formatDate(note.timestamp)}</span>
-        <span>To: ${formatRecipients(note)}</span>
+        <span>${isOwnNote ? 'To: ' : 'To: '}${formatRecipients(note)}</span>
       </div>
+      ${!isOwnNote ? `
       <div class="note-actions">
         <button class="reply-btn" data-reply="${note.id}">Reply</button>
       </div>
+      ` : ''}
     </article>
   `;
 }
@@ -470,11 +475,13 @@ function renderNoteCard(note) {
 function renderNotes() {
   if (!state.currentUser) {
     els.inboxList.innerHTML = '';
+    els.sentList.innerHTML = '';
     els.starredList.innerHTML = '';
     els.concernList.innerHTML = '';
     if (els.toChairsList) els.toChairsList.innerHTML = '';
     if (els.delegateNotesList) els.delegateNotesList.innerHTML = '';
     els.inboxEmpty.classList.remove('hidden');
+    els.sentEmpty.classList.remove('hidden');
     els.starredEmpty.classList.remove('hidden');
     els.concernEmpty.classList.remove('hidden');
     if (els.toChairsEmpty) els.toChairsEmpty.classList.remove('hidden');
@@ -525,6 +532,16 @@ function renderNotes() {
     els.inboxList.innerHTML = visibleNotes.map(renderNoteCard).join('');
   }
 
+  // Render Sent notes (notes sent by current user)
+  const sentNotes = state.notes.filter((note) => String(note.fromId) === String(state.currentUser.id));
+  sentNotes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  
+  if (sentNotes.length === 0) {
+    els.sentEmpty.classList.remove('hidden');
+  } else {
+    els.sentEmpty.classList.add('hidden');
+  }
+  els.sentList.innerHTML = sentNotes.map((note) => renderNoteCard(note, true)).join('');
 
   const starred = visibleNotes.filter((note) => noteStarred(note));
   if (starred.length === 0) {
@@ -1058,6 +1075,71 @@ async function checkExistingSession() {
   }
 }
 
+// Theme Management
+function initTheme() {
+  // Load saved theme preferences
+  const savedTheme = localStorage.getItem('theme') || 'blue';
+  const savedMode = localStorage.getItem('themeMode') || 'dark';
+  
+  // Apply theme
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  document.documentElement.setAttribute('data-theme-mode', savedMode);
+  
+  // Update UI
+  updateThemeButtons(savedTheme, savedMode);
+  
+  // Add event listeners
+  const darkModeToggle = document.getElementById('dark-mode-toggle');
+  const darkModeIcon = document.getElementById('dark-mode-icon');
+  const themeOptions = document.querySelectorAll('.theme-option');
+  
+  if (darkModeToggle) {
+    darkModeToggle.addEventListener('click', toggleDarkMode);
+    darkModeIcon.textContent = savedMode === 'dark' ? '🌙' : '☀️';
+  }
+  
+  themeOptions.forEach(option => {
+    option.addEventListener('click', () => {
+      const theme = option.dataset.theme;
+      setTheme(theme);
+    });
+  });
+}
+
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+  updateThemeButtons(theme, document.documentElement.getAttribute('data-theme-mode'));
+}
+
+function toggleDarkMode() {
+  const currentMode = document.documentElement.getAttribute('data-theme-mode');
+  const newMode = currentMode === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme-mode', newMode);
+  localStorage.setItem('themeMode', newMode);
+  
+  const darkModeIcon = document.getElementById('dark-mode-icon');
+  if (darkModeIcon) {
+    darkModeIcon.textContent = newMode === 'dark' ? '🌙' : '☀️';
+  }
+  
+  updateThemeButtons(
+    document.documentElement.getAttribute('data-theme'),
+    newMode
+  );
+}
+
+function updateThemeButtons(theme, mode) {
+  const themeOptions = document.querySelectorAll('.theme-option');
+  themeOptions.forEach(option => {
+    if (option.dataset.theme === theme) {
+      option.classList.add('active');
+    } else {
+      option.classList.remove('active');
+    }
+  });
+}
+
 function init() {
   renderTopicOptions();
   renderRecipients(null);
@@ -1065,6 +1147,9 @@ function init() {
   populateLoginCommittees();
   els.committeeSelect.disabled = true;
   els.addDelegationBtn.disabled = true;
+
+  // Initialize theme
+  initTheme();
 
   els.loginForm.addEventListener('submit', handleLogin);
   els.logoutBtn.addEventListener('click', handleLogout);
