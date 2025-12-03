@@ -116,6 +116,7 @@ const els = {
   dayChip: document.getElementById('day-chip'),
   logoutBtn: document.getElementById('logout-btn'),
   resetDemoData: document.getElementById('reset-demo-data'),
+  startLoginBtn: document.getElementById('start-login-btn'),
   tabs: document.querySelectorAll('.tab'),
   panels: document.querySelectorAll('.panel-body'),
   dashActions: document.querySelector('.dashboard-actions'),
@@ -667,6 +668,8 @@ async function handleLogin(event) {
 
   els.loginView.classList.add('hidden');
   els.dashboardView.classList.remove('hidden');
+  // Scroll to top to show dashboard
+  window.scrollTo({ top: 0, behavior: 'smooth' });
     
     // Format display name
     let displayName = state.currentUser.name;
@@ -734,7 +737,7 @@ function handleLogout() {
   localStorage.removeItem('currentUser');
   localStorage.removeItem('currentDay');
   els.dashboardView.classList.add('hidden');
-  els.loginView.classList.remove('hidden');
+  els.loginView.classList.add('hidden');
   els.loginPassword.value = '';
   els.loginCommittee.value = '';
   renderLoginOptions('');
@@ -743,6 +746,8 @@ function handleLogout() {
   els.committeeSelect.value = '';
   updateDelegationOptions('');
   renderRecipients(null);
+  // Scroll back to top to show hero section
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function collectRecipients() {
@@ -1175,6 +1180,10 @@ function init() {
     const type = els.loginPassword.type === 'password' ? 'text' : 'password';
     els.loginPassword.type = type;
     els.togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
+  });
+  els.startLoginBtn.addEventListener('click', () => {
+    els.loginView.classList.remove('hidden');
+    els.loginView.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
   updateDelegationOptions('');
   renderLoginOptions('');
