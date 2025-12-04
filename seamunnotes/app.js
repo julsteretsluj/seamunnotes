@@ -353,7 +353,7 @@ async function renderRecipients(committeeCode) {
   // Function kept for compatibility but no longer renders individual users
   // Recipients are now only selected via delegations
   // This function is intentionally empty as individual user selection was removed
-  return;
+    return;
 }
 
 function noteVisibleToUser(note, user) {
@@ -386,7 +386,7 @@ async function setNoteRead(noteId) {
     renderNotes();
   } catch (err) {
     console.error('Failed to mark note as read:', err);
-  }
+}
 }
 
 async function toggleStar(noteId) {
@@ -411,7 +411,7 @@ async function toggleStar(noteId) {
     });
     // Update the note's starred status
     note.isStarred = newStarred;
-    renderNotes();
+  renderNotes();
   } catch (err) {
     console.error('Failed to toggle star:', err);
     const errorMsg = err.message || 'Unknown error';
@@ -533,7 +533,7 @@ function renderNotes() {
     els.inboxEmpty.classList.remove('hidden');
   } else {
     els.inboxEmpty.classList.add('hidden');
-    }
+  }
     els.inboxList.innerHTML = visibleNotes.map(renderNoteCard).join('');
   }
 
@@ -604,7 +604,7 @@ function renderNotes() {
         </div>
           <div class="note-actions">
             <button class="reply-btn" data-reply="${note.id}">Reply</button>
-          </div>
+        </div>
       </article>
     `
     )
@@ -693,7 +693,7 @@ async function handleLogin(event) {
   els.dayChip.textContent = `Session Day ${day}`;
   document.querySelectorAll('.chair-only').forEach((el) => {
       el.classList[state.currentUser.role === 'chair' ? 'remove' : 'add']('hidden');
-    });
+  });
     
     // Show/hide appropriate inbox tabs based on role
     const inboxTab = document.getElementById('inbox-tab');
