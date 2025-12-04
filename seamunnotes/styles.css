@@ -197,7 +197,7 @@ body {
 
 [data-theme-mode="light"] body {
   background-image: var(--bg-accent),
-    linear-gradient(135deg, #f1f5f9 0%, #f1f5f9 60%, #e2e8f0 100%);
+    linear-gradient(135deg, #ced6e3 0%, #c5cedd 60%, #bcc6d7 100%);
 }
 
 #app {
@@ -230,7 +230,7 @@ h4 {
 
 .hero {
   background: linear-gradient(135deg, rgba(4, 12, 24, 0.65), rgba(6, 18, 34, 0.45)),
-    url('https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=2000&q=80')
+    url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2000&q=80')
       center top/cover fixed;
   color: white;
   padding: 5rem 1.5rem 6rem;
@@ -800,18 +800,19 @@ dialog::backdrop {
   top: 1rem;
   left: 50%;
   transform: translateX(-50%);
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
   z-index: 1000;
   background: var(--surface);
   backdrop-filter: blur(18px);
   border-radius: 16px;
-  padding: 0.75rem 1rem;
+  padding: 0.65rem 0.9rem;
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
-  width: min(960px, calc(100% - 2rem));
-  overflow: hidden;
+  width: auto;
+  max-width: calc(100% - 2rem);
+  justify-content: center;
 }
 
 .theme-toggle-btn {
@@ -850,21 +851,15 @@ dialog::backdrop {
 
 .theme-options {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.4rem;
   flex-wrap: nowrap;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.theme-options::-webkit-scrollbar {
-  display: none;
 }
 
 .theme-option {
   border: 1px solid var(--border);
   background: transparent;
   color: var(--text);
-  padding: 0.4rem 0.8rem;
+  padding: 0.35rem 0.7rem;
   border-radius: 8px;
   font-size: 0.8rem;
   cursor: pointer;
@@ -891,7 +886,8 @@ dialog::backdrop {
     left: 50%;
     transform: translateX(-50%);
     padding: 0.5rem 0.75rem;
-    gap: 0.75rem;
+    gap: 0.6rem;
+    flex-wrap: wrap;
   }
 
   .theme-label {
@@ -899,12 +895,14 @@ dialog::backdrop {
   }
 
   .theme-options {
-    gap: 0.4rem;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .theme-option {
-    padding: 0.35rem 0.6rem;
-    font-size: 0.75rem;
+    padding: 0.3rem 0.55rem;
+    font-size: 0.72rem;
   }
 
   .panel {
