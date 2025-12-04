@@ -233,7 +233,7 @@ h4 {
     url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2000&q=80')
       center top/cover fixed;
   color: white;
-  padding: 5rem 1.5rem 6rem;
+  padding: 7rem 1.5rem 6rem;
   position: relative;
   overflow: hidden;
   min-height: 60vh;
@@ -881,6 +881,10 @@ dialog::backdrop {
 }
 
 @media (max-width: 768px) {
+  .hero {
+    padding: 8.5rem 1.2rem 5rem;
+  }
+
   .theme-controls {
     top: 0.5rem;
     left: 50%;
