@@ -1003,6 +1003,59 @@ async function handleCompose(event) {
   }
 }
 
+async function fetchSuspendedState() {
+  try {
+    if (!state.token) return;
+    const data = await apiCall('/notes/suspended');
+    state.notePassingSuspended = data.suspended || false;
+    updateSuspendedUI();
+  } catch (err) {
+    console.error('Failed to fetch suspended state:', err);
+    state.notePassingSuspended = false;
+    updateSuspendedUI();
+  }
+}
+
+function updateSuspendedUI() {
+  if (els.suspendedBanner) {
+    if (state.notePassingSuspended) {
+      els.suspendedBanner.classList.remove('hidden');
+    } else {
+      els.suspendedBanner.classList.add('hidden');
+    }
+  }
+  if (els.suspendToggle) {
+    els.suspendToggle.textContent = state.notePassingSuspended 
+      ? 'Resume Note Passing' 
+      : 'Suspend Note Passing';
+  }
+}
+
+async function toggleSuspendedState() {
+  try {
+    if (!state.token) {
+      alert('You must be logged in to suspend note passing.');
+      return;
+    }
+    if (state.currentUser.role !== 'chair') {
+      alert('Only chairs can suspend note passing.');
+      return;
+    }
+    const newState = !state.notePassingSuspended;
+    await apiCall('/notes/suspend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ suspended: newState })
+    });
+    state.notePassingSuspended = newState;
+    updateSuspendedUI();
+    alert(newState ? 'Note passing has been suspended.' : 'Note passing has been resumed.');
+  } catch (err) {
+    console.error('Failed to toggle suspended state:', err);
+    alert('Failed to toggle suspended state: ' + (err.message || 'Unknown error'));
+  }
+}
+
 function switchTab(tabName) {
   els.tabs.forEach((tab) => tab.classList.toggle('active', tab.dataset.tab === tabName));
   els.panels.forEach((panel) => panel.classList.toggle('hidden', panel.dataset.panel !== tabName));
