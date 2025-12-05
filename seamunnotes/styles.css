@@ -289,19 +289,26 @@ h4 {
 
 .panel {
   backdrop-filter: blur(20px);
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.98);
   border-radius: 24px;
   padding: 3rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.3);
   max-width: 1200px;
   margin: 0 auto;
+  color: #1a1a1a;
+}
+
+.panel h2,
+.panel h3,
+.panel h4 {
+  color: #1a1a1a;
 }
 
 .panel__hint {
   margin-top: -0.2rem;
   margin-bottom: 1.5rem;
-  color: var(--muted);
+  color: #4a4a4a;
 }
 
 .form-control {
@@ -315,12 +322,19 @@ h4 {
 .form-control input,
 .form-control select,
 .form-control textarea {
-  border: 1px solid var(--border);
+  border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 12px;
   padding: 0.85rem 1rem;
   font-size: 1rem;
   font-family: inherit;
   transition: border 0.2s, box-shadow 0.2s;
+  background: #ffffff;
+  color: #1a1a1a;
+}
+
+.form-control input::placeholder,
+.form-control textarea::placeholder {
+  color: #8a8a8a;
 }
 
 .form-control textarea {
@@ -332,8 +346,8 @@ h4 {
 .form-control select:focus,
 .form-control textarea:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(94, 234, 212, 0.12);
+  border-color: var(--neon-green);
+  box-shadow: 0 0 0 4px rgba(0, 255, 0, 0.15);
 }
 
 .password-field {
@@ -426,8 +440,9 @@ h4 {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-size: 0.8rem;
-  color: var(--muted);
+  color: #4a4a4a;
   margin: 0;
+  font-weight: 600;
 }
 
 .day-toggle {
@@ -461,6 +476,11 @@ h4 {
   justify-content: space-between;
   gap: 1rem;
   align-items: center;
+  color: #1a1a1a;
+}
+
+.dashboard-head h2 {
+  color: #1a1a1a;
 }
 
 #user-chip {
@@ -477,10 +497,10 @@ h4 {
 .chair-notice {
   margin-top: 1rem;
   padding: 1rem 1.5rem;
-  background: color-mix(in srgb, var(--primary) 15%, transparent);
-  border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid rgba(0, 255, 0, 0.3);
   border-radius: 12px;
-  color: var(--text);
+  color: #1a1a1a;
 }
 
 .chair-notice p {
@@ -492,12 +512,12 @@ h4 {
 .suspended-banner {
   margin-top: 1rem;
   padding: 1rem 1.5rem;
-  background: color-mix(in srgb, var(--danger) 20%, transparent);
-  border: 2px solid var(--danger);
+  background: rgba(255, 68, 68, 0.15);
+  border: 2px solid #ff4444;
   border-radius: 12px;
-  color: var(--text);
+  color: #1a1a1a;
   text-align: center;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .suspended-banner p {
@@ -509,7 +529,7 @@ h4 {
   margin-top: 1.5rem;
   display: flex;
   gap: 0.8rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .tab {
@@ -518,15 +538,17 @@ h4 {
   padding: 0.8rem 1.4rem;
   font-size: 1rem;
   font-weight: 600;
-  color: var(--muted);
+  color: #6a6a6a;
   cursor: pointer;
   border-bottom: 3px solid transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .tab.active {
-  color: var(--primary);
-  border-color: var(--primary);
-  text-shadow: 0 0 12px rgba(94, 234, 212, 0.4);
+  color: var(--neon-green);
+  border-color: var(--neon-green);
+  text-shadow: 0 0 12px rgba(0, 255, 0, 0.3);
 }
 
 .panel-body {
@@ -539,14 +561,15 @@ h4 {
 }
 
 .note-card {
-  border: 1px solid rgba(94, 234, 212, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 22px;
   padding: 1.2rem;
-  background: rgba(15, 23, 42, 0.75);
-  box-shadow: 0 25px 50px rgba(2, 6, 23, 0.6);
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
+  color: #1a1a1a;
 }
 
 .note-card.new {
@@ -574,19 +597,17 @@ h4 {
   padding: 0.25rem 0.9rem;
   border-radius: 999px;
   font-size: 0.85rem;
-  background: rgba(14, 165, 233, 0.15);
-  color: var(--primary);
-  font-weight: 600;
-}
-
-[data-theme] .note-topic {
-  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  background: rgba(0, 255, 0, 0.15);
+  color: #006600;
+  font-weight: 700;
+  border: 1px solid rgba(0, 255, 0, 0.3);
 }
 
 .note-content {
   font-size: 1rem;
   line-height: 1.7;
   white-space: pre-wrap;
+  color: #2a2a2a;
 }
 
 .note-meta {
@@ -594,7 +615,7 @@ h4 {
   justify-content: space-between;
   align-items: center;
   font-size: 0.9rem;
-  color: var(--muted);
+  color: #6a6a6a;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
@@ -849,9 +870,11 @@ dialog::backdrop {
 
 .theme-label {
   font-size: 0.85rem;
-  color: var(--muted);
-  font-weight: 500;
+  color: #ffffff;
+  font-weight: 600;
   white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .theme-options {
