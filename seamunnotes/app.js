@@ -1219,14 +1219,38 @@ function init() {
   });
   // Handle all login role buttons
   const handleLoginButtonClick = () => {
-    els.loginView.classList.remove('hidden');
-    els.loginView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (els.loginView) {
+      els.loginView.classList.remove('hidden');
+      els.loginView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      console.error('Login view element not found');
+    }
   };
   
-  els.loginDelegateBtn?.addEventListener('click', handleLoginButtonClick);
-  els.loginChairBtn?.addEventListener('click', handleLoginButtonClick);
-  els.loginSecretaryGeneralBtn?.addEventListener('click', handleLoginButtonClick);
-  els.loginParliamentarianBtn?.addEventListener('click', handleLoginButtonClick);
+  // Add event listeners for all login buttons
+  if (els.loginDelegateBtn) {
+    els.loginDelegateBtn.addEventListener('click', handleLoginButtonClick);
+  } else {
+    console.warn('Login delegate button not found');
+  }
+  
+  if (els.loginChairBtn) {
+    els.loginChairBtn.addEventListener('click', handleLoginButtonClick);
+  } else {
+    console.warn('Login chair button not found');
+  }
+  
+  if (els.loginSecretaryGeneralBtn) {
+    els.loginSecretaryGeneralBtn.addEventListener('click', handleLoginButtonClick);
+  } else {
+    console.warn('Login secretary general button not found');
+  }
+  
+  if (els.loginParliamentarianBtn) {
+    els.loginParliamentarianBtn.addEventListener('click', handleLoginButtonClick);
+  } else {
+    console.warn('Login parliamentarian button not found');
+  }
   updateDelegationOptions('');
   renderLoginOptions('');
   checkExistingSession();
