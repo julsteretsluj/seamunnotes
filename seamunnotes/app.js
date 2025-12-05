@@ -117,7 +117,10 @@ const els = {
   dayChip: document.getElementById('day-chip'),
   logoutBtn: document.getElementById('logout-btn'),
   resetDemoData: document.getElementById('reset-demo-data'),
-  startLoginBtn: document.getElementById('start-login-btn'),
+  loginDelegateBtn: document.getElementById('login-delegate-btn'),
+  loginChairBtn: document.getElementById('login-chair-btn'),
+  loginSecretaryGeneralBtn: document.getElementById('login-secretary-general-btn'),
+  loginParliamentarianBtn: document.getElementById('login-parliamentarian-btn'),
   tabs: document.querySelectorAll('.tab'),
   panels: document.querySelectorAll('.panel-body'),
   dashActions: document.querySelector('.dashboard-actions'),
@@ -1202,10 +1205,16 @@ function init() {
     els.loginPassword.type = type;
     els.togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
   });
-  els.startLoginBtn.addEventListener('click', () => {
+  // Handle all login role buttons
+  const handleLoginButtonClick = () => {
     els.loginView.classList.remove('hidden');
     els.loginView.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
+  };
+  
+  els.loginDelegateBtn?.addEventListener('click', handleLoginButtonClick);
+  els.loginChairBtn?.addEventListener('click', handleLoginButtonClick);
+  els.loginSecretaryGeneralBtn?.addEventListener('click', handleLoginButtonClick);
+  els.loginParliamentarianBtn?.addEventListener('click', handleLoginButtonClick);
   updateDelegationOptions('');
   renderLoginOptions('');
   checkExistingSession();
