@@ -1218,39 +1218,40 @@ function init() {
     els.togglePassword.textContent = type === 'password' ? '👁️' : '🙈';
   });
   // Handle all login role buttons
-  const handleLoginButtonClick = () => {
-    if (els.loginView) {
-      els.loginView.classList.remove('hidden');
-      els.loginView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const handleLoginButtonClick = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    console.log('Login button clicked');
+    const loginView = document.getElementById('login-view');
+    if (loginView) {
+      console.log('Showing login view');
+      loginView.classList.remove('hidden');
+      setTimeout(() => {
+        loginView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     } else {
       console.error('Login view element not found');
     }
+    return false;
   };
   
   // Add event listeners for all login buttons
-  if (els.loginDelegateBtn) {
-    els.loginDelegateBtn.addEventListener('click', handleLoginButtonClick);
-  } else {
-    console.warn('Login delegate button not found');
-  }
+  const buttons = [
+    { id: 'login-delegate-btn', name: 'Delegate' },
+    { id: 'login-chair-btn', name: 'Chair' },
+    { id: 'login-secretary-general-btn', name: 'Secretary General' },
+    { id: 'login-parliamentarian-btn', name: 'Parliamentarian' }
+  ];
   
-  if (els.loginChairBtn) {
-    els.loginChairBtn.addEventListener('click', handleLoginButtonClick);
-  } else {
-    console.warn('Login chair button not found');
-  }
-  
-  if (els.loginSecretaryGeneralBtn) {
-    els.loginSecretaryGeneralBtn.addEventListener('click', handleLoginButtonClick);
-  } else {
-    console.warn('Login secretary general button not found');
-  }
-  
-  if (els.loginParliamentarianBtn) {
-    els.loginParliamentarianBtn.addEventListener('click', handleLoginButtonClick);
-  } else {
-    console.warn('Login parliamentarian button not found');
-  }
+  buttons.forEach(({ id, name }) => {
+    const btn = document.getElementById(id);
+    if (btn) {
+      btn.addEventListener('click', handleLoginButtonClick);
+      console.log(`${name} button listener added`);
+    } else {
+      console.error(`${name} button (${id}) NOT FOUND`);
+    }
+  });
   updateDelegationOptions('');
   renderLoginOptions('');
   checkExistingSession();
