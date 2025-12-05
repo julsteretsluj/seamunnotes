@@ -272,6 +272,12 @@ async function fetchUsers() {
           const chairNum = parseInt(match[1], 10);
           displayName = `Chair of ${u.committee_code} (${chairNum})`;
         }
+      } else if (u.role === 'parliamentarian') {
+        // Parliamentarians: use delegation name (e.g., "Parliamentarian 1")
+        displayName = u.delegation || `Parliamentarian ${u.username.match(/\d+/)?.[0] || ''}`;
+      } else if (u.role === 'secretary-general') {
+        // Secretary Generals: use delegation name (e.g., "Secretary General" or "Deputy Secretary General")
+        displayName = u.delegation || 'Secretary General';
       } else if (u.delegation) {
         // Delegates: use "Committee Name Seat XX"
         displayName = u.delegation;
@@ -1054,6 +1060,12 @@ async function checkExistingSession() {
           const chairNum = parseInt(match[1], 10);
           displayName = `Chair of ${state.currentUser.committeeCode} (${chairNum})`;
         }
+      } else if (state.currentUser.role === 'parliamentarian') {
+        // For parliamentarians, use the delegation name
+        displayName = state.currentUser.delegation || 'Parliamentarian';
+      } else if (state.currentUser.role === 'secretary-general') {
+        // For secretary generals, use the delegation name
+        displayName = state.currentUser.delegation || 'Secretary General';
       } else {
         // For delegates, use the delegation name
         displayName = state.currentUser.delegation;

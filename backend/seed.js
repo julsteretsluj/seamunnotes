@@ -80,6 +80,67 @@ function makeUsers() {
       });
     }
   });
+  
+  // Create Parliamentarians (3 parliamentarians, separate for day 1 and day 2)
+  for (let i = 1; i <= 3; i += 1) {
+    users.push({
+      username: `parliamentarian${pad(i)}-day1`,
+      password: `parliamentarian${pad(i)}-day1`,
+      role: 'parliamentarian',
+      committee_code: 'GENERAL',
+      delegation: `Parliamentarian ${i}`,
+      flag: '🏛️',
+      credentials_day: 1
+    });
+    users.push({
+      username: `parliamentarian${pad(i)}-day2`,
+      password: `parliamentarian${pad(i)}-day2`,
+      role: 'parliamentarian',
+      committee_code: 'GENERAL',
+      delegation: `Parliamentarian ${i}`,
+      flag: '🏛️',
+      credentials_day: 2
+    });
+  }
+  
+  // Create Secretary General (1 sec gen, 1 deputy sec gen, separate for day 1 and day 2)
+  users.push({
+    username: 'secretary-general-day1',
+    password: 'secretary-general-day1',
+    role: 'secretary-general',
+    committee_code: 'GENERAL',
+    delegation: 'Secretary General',
+    flag: '📋',
+    credentials_day: 1
+  });
+  users.push({
+    username: 'secretary-general-day2',
+    password: 'secretary-general-day2',
+    role: 'secretary-general',
+    committee_code: 'GENERAL',
+    delegation: 'Secretary General',
+    flag: '📋',
+    credentials_day: 2
+  });
+  users.push({
+    username: 'deputy-secretary-general-day1',
+    password: 'deputy-secretary-general-day1',
+    role: 'secretary-general',
+    committee_code: 'GENERAL',
+    delegation: 'Deputy Secretary General',
+    flag: '📋',
+    credentials_day: 1
+  });
+  users.push({
+    username: 'deputy-secretary-general-day2',
+    password: 'deputy-secretary-general-day2',
+    role: 'secretary-general',
+    committee_code: 'GENERAL',
+    delegation: 'Deputy Secretary General',
+    flag: '📋',
+    credentials_day: 2
+  });
+  
   return users;
 }
 
