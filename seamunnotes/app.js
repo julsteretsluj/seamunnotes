@@ -1102,7 +1102,7 @@ async function checkExistingSession() {
 function initTheme() {
   // Load saved theme preferences
   const savedTheme = localStorage.getItem('theme') || 'blue';
-  const savedMode = localStorage.getItem('themeMode') || 'dark';
+  const savedMode = localStorage.getItem('themeMode') || 'light';
   
   // Apply theme
   document.documentElement.setAttribute('data-theme', savedTheme);
