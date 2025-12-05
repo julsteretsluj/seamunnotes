@@ -1,23 +1,23 @@
 :root {
   color-scheme: dark;
-  font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   
-  /* Default Blue Theme (Dark) */
-  --bg: #081527;
-  --bg-accent: radial-gradient(circle at 20% 20%, rgba(93, 147, 191, 0.18), transparent 45%),
-    radial-gradient(circle at 80% 0%, rgba(188, 147, 197, 0.18), transparent 40%),
-    radial-gradient(circle at 50% 80%, rgba(120, 166, 209, 0.18), transparent 45%);
-  --surface: rgba(15, 23, 42, 0.75);
-  --surface-solid: #122038;
-  --text: #f5f7fb;
-  --muted: #9fb2c7;
-  --border: rgba(149, 170, 197, 0.25);
-  --primary: #76b7c8;
-  --primary-dark: #3a738a;
-  --accent: #d28ab7;
-  --success: #7dc8b8;
-  --danger: #e58d8d;
-  --shadow: 0 35px 70px rgba(5, 5, 15, 0.55);
+  /* BASE CLUB Style - Electric Blue Theme (Default) */
+  --bg: #0066FF;
+  --bg-accent: #0066FF;
+  --surface: rgba(255, 255, 255, 0.1);
+  --surface-solid: rgba(255, 255, 255, 0.15);
+  --text: #ffffff;
+  --muted: rgba(255, 255, 255, 0.7);
+  --border: rgba(255, 255, 255, 0.2);
+  --primary: #00FF00;
+  --primary-dark: #00CC00;
+  --accent: #00FF00;
+  --success: #00FF00;
+  --danger: #ff4444;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --neon-green: #00FF00;
+  --electric-blue: #0066FF;
 }
 
 /* Light Mode Variables */
@@ -36,12 +36,13 @@
 
 /* Red Theme */
 [data-theme="red"] {
-  --primary: #f87171;
-  --primary-dark: #dc2626;
-  --accent: #ef4444;
-  --bg-accent: radial-gradient(circle at 20% 20%, rgba(248, 113, 113, 0.2), transparent 45%),
-    radial-gradient(circle at 80% 0%, rgba(239, 68, 68, 0.2), transparent 40%),
-    radial-gradient(circle at 50% 80%, rgba(220, 38, 38, 0.2), transparent 45%);
+  --primary: #ff4444;
+  --primary-dark: #cc0000;
+  --accent: #ff6666;
+  --neon-green: #ff4444;
+  --electric-blue: #cc0000;
+  --bg: #cc0000;
+  --bg-accent: #cc0000;
 }
 
 [data-theme="red"][data-theme-mode="light"] {
@@ -52,12 +53,13 @@
 
 /* Orange Theme */
 [data-theme="orange"] {
-  --primary: #fb923c;
-  --primary-dark: #ea580c;
-  --accent: #f97316;
-  --bg-accent: radial-gradient(circle at 20% 20%, rgba(251, 146, 60, 0.2), transparent 45%),
-    radial-gradient(circle at 80% 0%, rgba(249, 115, 22, 0.2), transparent 40%),
-    radial-gradient(circle at 50% 80%, rgba(234, 88, 12, 0.2), transparent 45%);
+  --primary: #ff8800;
+  --primary-dark: #cc6600;
+  --accent: #ffaa33;
+  --neon-green: #ff8800;
+  --electric-blue: #ff6600;
+  --bg: #ff6600;
+  --bg-accent: #ff6600;
 }
 
 [data-theme="orange"][data-theme-mode="light"] {
@@ -68,12 +70,13 @@
 
 /* Yellow Theme */
 [data-theme="yellow"] {
-  --primary: #fbbf24;
-  --primary-dark: #d97706;
-  --accent: #f59e0b;
-  --bg-accent: radial-gradient(circle at 20% 20%, rgba(251, 191, 36, 0.2), transparent 45%),
-    radial-gradient(circle at 80% 0%, rgba(245, 158, 11, 0.2), transparent 40%),
-    radial-gradient(circle at 50% 80%, rgba(217, 119, 6, 0.2), transparent 45%);
+  --primary: #ffdd00;
+  --primary-dark: #ccaa00;
+  --accent: #ffee44;
+  --neon-green: #ffdd00;
+  --electric-blue: #ffcc00;
+  --bg: #ffcc00;
+  --bg-accent: #ffcc00;
 }
 
 [data-theme="yellow"][data-theme-mode="light"] {
@@ -84,12 +87,13 @@
 
 /* Green Theme */
 [data-theme="green"] {
-  --primary: #4ade80;
-  --primary-dark: #16a34a;
-  --accent: #22c55e;
-  --bg-accent: radial-gradient(circle at 20% 20%, rgba(74, 222, 128, 0.2), transparent 45%),
-    radial-gradient(circle at 80% 0%, rgba(34, 197, 94, 0.2), transparent 40%),
-    radial-gradient(circle at 50% 80%, rgba(22, 163, 74, 0.2), transparent 45%);
+  --primary: #00ff88;
+  --primary-dark: #00cc66;
+  --accent: #44ffaa;
+  --neon-green: #00ff88;
+  --electric-blue: #00cc66;
+  --bg: #00cc66;
+  --bg-accent: #00cc66;
 }
 
 [data-theme="green"][data-theme-mode="light"] {
@@ -100,12 +104,13 @@
 
 /* Blue Theme (Default) */
 [data-theme="blue"] {
-  --primary: #5eead4;
-  --primary-dark: #0ea5e9;
-  --accent: #3b82f6;
-  --bg-accent: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.2), transparent 45%),
-    radial-gradient(circle at 80% 0%, rgba(236, 72, 153, 0.2), transparent 40%),
-    radial-gradient(circle at 50% 80%, rgba(129, 140, 248, 0.2), transparent 45%);
+  --primary: #00FF00;
+  --primary-dark: #00CC00;
+  --accent: #00FF00;
+  --neon-green: #00FF00;
+  --electric-blue: #0066FF;
+  --bg: #0066FF;
+  --bg-accent: #0066FF;
 }
 
 [data-theme="blue"][data-theme-mode="light"] {
@@ -116,12 +121,13 @@
 
 /* Purple Theme */
 [data-theme="purple"] {
-  --primary: #a78bfa;
-  --primary-dark: #7c3aed;
-  --accent: #8b5cf6;
-  --bg-accent: radial-gradient(circle at 20% 20%, rgba(167, 139, 250, 0.2), transparent 45%),
-    radial-gradient(circle at 80% 0%, rgba(139, 92, 246, 0.2), transparent 40%),
-    radial-gradient(circle at 50% 80%, rgba(124, 58, 237, 0.2), transparent 45%);
+  --primary: #cc00ff;
+  --primary-dark: #9900cc;
+  --accent: #ff44ff;
+  --neon-green: #cc00ff;
+  --electric-blue: #9900ff;
+  --bg: #9900ff;
+  --bg-accent: #9900ff;
 }
 
 [data-theme="purple"][data-theme-mode="light"] {
@@ -132,12 +138,13 @@
 
 /* Pink Theme */
 [data-theme="pink"] {
-  --primary: #f472b6;
-  --primary-dark: #db2777;
-  --accent: #ec4899;
-  --bg-accent: radial-gradient(circle at 20% 20%, rgba(244, 114, 182, 0.2), transparent 45%),
-    radial-gradient(circle at 80% 0%, rgba(236, 72, 153, 0.2), transparent 40%),
-    radial-gradient(circle at 50% 80%, rgba(219, 39, 119, 0.2), transparent 45%);
+  --primary: #ff44cc;
+  --primary-dark: #cc0099;
+  --accent: #ff66dd;
+  --neon-green: #ff44cc;
+  --electric-blue: #ff0099;
+  --bg: #ff0099;
+  --bg-accent: #ff0099;
 }
 
 [data-theme="pink"][data-theme-mode="light"] {
@@ -148,12 +155,13 @@
 
 /* Grey Theme */
 [data-theme="grey"] {
-  --primary: #94a3b8;
-  --primary-dark: #64748b;
-  --accent: #475569;
-  --bg-accent: radial-gradient(circle at 20% 20%, rgba(148, 163, 184, 0.2), transparent 45%),
-    radial-gradient(circle at 80% 0%, rgba(100, 116, 139, 0.2), transparent 40%),
-    radial-gradient(circle at 50% 80%, rgba(71, 85, 105, 0.2), transparent 45%);
+  --primary: #cccccc;
+  --primary-dark: #999999;
+  --accent: #dddddd;
+  --neon-green: #cccccc;
+  --electric-blue: #666666;
+  --bg: #666666;
+  --bg-accent: #666666;
 }
 
 [data-theme="grey"][data-theme-mode="light"] {
@@ -164,12 +172,13 @@
 
 /* Monochrome Theme */
 [data-theme="monochrome"] {
-  --primary: #e2e8f0;
-  --primary-dark: #cbd5e1;
-  --accent: #94a3b8;
-  --bg-accent: radial-gradient(circle at 20% 20%, rgba(226, 232, 240, 0.2), transparent 45%),
-    radial-gradient(circle at 80% 0%, rgba(203, 213, 225, 0.2), transparent 40%),
-    radial-gradient(circle at 50% 80%, rgba(148, 163, 184, 0.2), transparent 45%);
+  --primary: #ffffff;
+  --primary-dark: #cccccc;
+  --accent: #eeeeee;
+  --neon-green: #ffffff;
+  --electric-blue: #333333;
+  --bg: #333333;
+  --bg-accent: #333333;
 }
 
 [data-theme="monochrome"][data-theme-mode="light"] {
@@ -186,7 +195,7 @@
 
 body {
   margin: 0;
-  background: var(--electric-blue);
+  background: var(--bg);
   color: var(--text);
   min-height: 100vh;
   transition: background 0.3s ease, color 0.3s ease;
@@ -224,7 +233,7 @@ h4 {
 }
 
 .hero {
-  background: var(--electric-blue);
+  background: var(--bg);
   color: #ffffff;
   padding: 10rem 1.5rem 8rem;
   position: relative;
@@ -233,6 +242,7 @@ h4 {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 0.3s ease;
 }
 
 .hero::after {
@@ -264,8 +274,8 @@ h4 {
 }
 
 .hero h1 span.neon {
-  color: var(--neon-green);
-  text-shadow: 0 0 20px var(--neon-green), 0 0 40px var(--neon-green);
+  color: var(--primary);
+  text-shadow: 0 0 20px var(--primary), 0 0 40px var(--primary);
 }
 
 .hero p {
@@ -397,7 +407,7 @@ h4 {
 }
 
 .btn.primary {
-  background: var(--neon-green);
+  background: var(--primary);
   color: #000000;
   box-shadow: 0 0 20px rgba(0, 255, 0, 0.4), 0 4px 20px rgba(0, 255, 0, 0.2);
   font-weight: 700;
@@ -405,11 +415,16 @@ h4 {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+[data-theme] .btn.primary {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--primary) 40%, transparent), 0 4px 20px color-mix(in srgb, var(--primary) 20%, transparent);
 }
 
 .btn.primary:hover {
-  background: #00CC00;
-  box-shadow: 0 0 30px rgba(0, 255, 0, 0.6), 0 6px 30px rgba(0, 255, 0, 0.3);
+  background: var(--primary-dark);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--primary) 60%, transparent), 0 6px 30px color-mix(in srgb, var(--primary) 30%, transparent);
   transform: translateY(-2px);
 }
 
@@ -497,8 +512,8 @@ h4 {
 .chair-notice {
   margin-top: 1rem;
   padding: 1rem 1.5rem;
-  background: rgba(0, 255, 0, 0.1);
-  border: 1px solid rgba(0, 255, 0, 0.3);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
   border-radius: 12px;
   color: #1a1a1a;
 }
@@ -546,9 +561,9 @@ h4 {
 }
 
 .tab.active {
-  color: var(--neon-green);
-  border-color: var(--neon-green);
-  text-shadow: 0 0 12px rgba(0, 255, 0, 0.3);
+  color: var(--primary);
+  border-color: var(--primary);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--primary) 30%, transparent);
 }
 
 .panel-body {
@@ -597,10 +612,10 @@ h4 {
   padding: 0.25rem 0.9rem;
   border-radius: 999px;
   font-size: 0.85rem;
-  background: rgba(0, 255, 0, 0.15);
-  color: #006600;
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  color: var(--primary-dark);
   font-weight: 700;
-  border: 1px solid rgba(0, 255, 0, 0.3);
+  border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
 }
 
 .note-content {
@@ -900,15 +915,15 @@ dialog::backdrop {
 
 .theme-option:hover {
   background: rgba(255, 255, 255, 0.2);
-  border-color: var(--neon-green);
+  border-color: var(--primary);
 }
 
 .theme-option.active {
-  background: var(--neon-green);
+  background: var(--primary);
   color: #000000;
-  border-color: var(--neon-green);
+  border-color: var(--primary);
   font-weight: 700;
-  box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--primary) 40%, transparent);
 }
 
 @media (max-width: 768px) {
